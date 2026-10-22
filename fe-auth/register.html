@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Đăng ký — Sneaker House</title>
+  <meta name="description" content="Tạo tài khoản Sneaker House để mua sắm sneaker nhanh hơn.">
+  <meta name="theme-color" content="#111111">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Bỏ qua tới nội dung chính</a>
+  <div class="auth">
+    <div class="panel">
+      <a class="brand" href="index.html" aria-label="Sneaker House — về trang chủ">
+        <img class="brand__logo" src="assets/logo-dark.png" alt="" width="1000" height="290">
+      </a>
+      <a class="mini-hero" href="index.html" aria-label="Sneaker House — về trang chủ">
+        <img class="mini-hero__bg" src="assets/slide-1-samba-720.webp" alt="" width="720" height="900" decoding="async">
+        <img class="mini-hero__logo" src="assets/logo-light.png" alt="" width="1000" height="290">
+        <span class="mini-hero__tag">Sneaker cho từng phong cách.</span>
+      </a>
+
+      <main class="panel__main" id="main">
+        <div class="form-wrap">
+          <noscript><p class="notice notice--error">Trang này cần bật JavaScript để đăng nhập và xem ảnh nổi bật. Vui lòng bật JavaScript rồi tải lại trang.</p></noscript>
+          <div data-intro>
+            <p class="eyebrow">Tham gia cùng chúng tôi</p>
+            <h1 class="title">Tạo tài khoản</h1>
+            <p class="lead">Chỉ mất một phút để bắt đầu mua sắm và lưu đôi giày bạn thích.</p>
+          </div>
+
+          <form class="form" data-form="register" novalidate>
+            <div class="err-summary" data-summary role="alert" tabindex="-1" hidden>
+              <h2 class="err-summary__title">Vui lòng kiểm tra lại thông tin</h2>
+              <ul></ul>
+            </div>
+            <div class="notice" data-notice hidden></div>
+
+            <div class="field">
+              <label for="fullName">Họ và tên</label>
+              <input class="input" id="fullName" name="fullName" type="text" autocomplete="name" aria-describedby="fullName-error" required>
+              <p class="field__error" id="fullName-error" hidden></p>
+            </div>
+
+            <div class="field">
+              <label for="email">Email</label>
+              <input class="input" id="email" name="email" type="email" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" aria-describedby="email-error" required>
+              <p class="field__error" id="email-error" hidden></p>
+            </div>
+
+            <div class="field">
+              <label for="password">Mật khẩu</label>
+              <div class="pw">
+                <input class="input" id="password" name="password" type="password" autocomplete="new-password" aria-describedby="password-error password-reqs" required>
+                <button class="pw__toggle" type="button" data-toggle-pw="password"></button>
+              </div>
+              <p class="field__error" id="password-error" hidden></p>
+              <div class="strength" data-strength hidden>
+                <div class="strength__bars" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+                <span class="strength__label" aria-live="polite"></span>
+              </div>
+              <ul class="reqs" id="password-reqs">
+                <li data-req="len"><span data-req-icon></span><span><span class="sr-only"></span>Ít nhất 8 ký tự</span></li>
+                <li data-req="upper"><span data-req-icon></span><span><span class="sr-only"></span>Có chữ hoa (A–Z)</span></li>
+                <li data-req="lower"><span data-req-icon></span><span><span class="sr-only"></span>Có chữ thường (a–z)</span></li>
+                <li data-req="digit"><span data-req-icon></span><span><span class="sr-only"></span>Có chữ số (0–9)</span></li>
+              </ul>
+            </div>
+
+            <div class="field">
+              <label for="confirmPassword">Nhập lại mật khẩu</label>
+              <div class="pw">
+                <input class="input" id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" aria-describedby="confirmPassword-error" required>
+                <button class="pw__toggle" type="button" data-toggle-pw="confirmPassword"></button>
+              </div>
+              <p class="field__error" id="confirmPassword-error" hidden></p>
+            </div>
+
+            <div class="field">
+              <label class="check check--top" for="terms">
+                <input type="checkbox" id="terms" name="terms" data-validate aria-describedby="terms-error" required>
+                <span>Tôi đồng ý với <a class="link link--small" href="terms.html" target="_blank" rel="noopener">Điều khoản sử dụng<span class="sr-only"> (mở tab mới)</span></a> và <a class="link link--small" href="privacy.html" target="_blank" rel="noopener">Chính sách bảo mật<span class="sr-only"> (mở tab mới)</span></a>.</span>
+              </label>
+              <p class="field__error" id="terms-error" hidden></p>
+            </div>
+
+            <button class="btn" type="submit" data-loading="Đang tạo tài khoản…">
+              <span class="spinner" hidden aria-hidden="true"></span>
+              <span data-label>Đăng ký</span>
+            </button>
+
+            <p class="switch">Đã có tài khoản? <a class="link" href="login.html" data-nav>Quay lại đăng nhập</a></p>
+          </form>
+
+          <section class="status" data-status hidden>
+            <div class="status__icon" data-icon="check" aria-hidden="true"></div>
+            <h2 class="status__title" data-status-title tabindex="-1"></h2>
+            <p class="status__text" data-status-text></p>
+            <a class="btn" href="login.html" data-nav>Đăng nhập ngay</a>
+          </section>
+        </div>
+      </main>
+
+      <p class="panel__foot">© 2026 Sneaker House · <a class="link foot-link" href="terms.html">Điều khoản</a> · <a class="link foot-link" href="privacy.html">Chính sách bảo mật</a></p>
+    </div>
+
+    <aside class="visual" data-carousel aria-label="Giày nổi bật"></aside>
+  </div>
+  <script src="js/auth.js"></script>
+</body>
+</html>
