@@ -332,6 +332,43 @@ ul { padding: 0; list-style: none; }
 .status__actions { display: grid; gap: var(--s-3); width: 100%; margin-top: var(--s-2); }
 .status__actions .btn { margin-top: 0; }
 
+/* ---------- Đăng nhập bằng Google ---------- */
+.social { display: grid; gap: var(--s-3); }
+.divider {
+  display: flex; align-items: center; gap: var(--s-3);
+  font-size: var(--fs-sm); color: var(--c-muted);
+}
+.divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--c-line); }
+
+/* Nút chính thức của Google (iframe, cao 40px, tối đa 400px) nằm giữa khung form */
+.social__btn { display: flex; justify-content: center; min-height: 40px; transition: opacity var(--t-fast); }
+.social__btn .btn { width: auto; }
+.social.is-busy .social__btn { opacity: 0.5; pointer-events: none; }
+.social__status[hidden] { display: none; }
+.social__note { font-size: var(--fs-sm); color: var(--c-muted); }
+.social__note .link { font-weight: 500; }
+.btn--small { height: 40px; padding: 0 var(--s-4); font-size: var(--fs-sm); }
+
+/* Nút giả chỉ xuất hiện ở chế độ mock khi chưa có Client ID */
+.gbtn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; max-width: 400px; height: 40px; padding: 0 12px;
+  font: 500 14px/1 Roboto, Arial, sans-serif; color: #3c4043;
+  background: #fff; border: 1px solid #dadce0; border-radius: 4px; cursor: pointer;
+  transition: background var(--t-fast), box-shadow var(--t-fast);
+}
+.gbtn:hover { background: #f8faff; box-shadow: 0 1px 2px rgba(60, 64, 67, 0.3); }
+.gbtn__logo { width: 18px; height: 18px; flex: none; }
+
+.spinner--dark { border-color: rgba(17, 17, 17, 0.25); border-top-color: var(--c-ink); }
+
+.mock-badge {
+  position: fixed; right: var(--s-3); bottom: var(--s-3); z-index: 50; margin: 0;
+  padding: var(--s-1) var(--s-3); border-radius: 999px;
+  background: var(--c-ink); color: #fff; font-size: 0.75rem; font-weight: 600;
+  pointer-events: none;
+}
+
 /* Độ mạnh mật khẩu */
 .strength { display: grid; gap: var(--s-2); }
 .strength[hidden] { display: none; }

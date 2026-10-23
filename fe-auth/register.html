@@ -54,6 +54,12 @@
             </div>
 
             <div class="field">
+              <label for="phone">Số điện thoại</label>
+              <input class="input" id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" aria-describedby="phone-error" required>
+              <p class="field__error" id="phone-error" hidden></p>
+            </div>
+
+            <div class="field">
               <label for="password">Mật khẩu</label>
               <div class="pw">
                 <input class="input" id="password" name="password" type="password" autocomplete="new-password" aria-describedby="password-error password-reqs" required>
@@ -94,6 +100,13 @@
               <span data-label>Đăng ký</span>
             </button>
 
+            <div class="social" data-google>
+              <p class="divider"><span>hoặc</span></p>
+              <div class="social__btn" data-google-btn></div>
+              <div class="social__status notice" data-google-status hidden></div>
+              <p class="social__note">Khi đăng ký bằng Google, bạn đồng ý với <a class="link link--small" href="terms.html" target="_blank" rel="noopener">Điều khoản sử dụng<span class="sr-only"> (mở tab mới)</span></a> và <a class="link link--small" href="privacy.html" target="_blank" rel="noopener">Chính sách bảo mật<span class="sr-only"> (mở tab mới)</span></a>.</p>
+            </div>
+
             <p class="switch">Đã có tài khoản? <a class="link" href="login.html" data-nav>Quay lại đăng nhập</a></p>
           </form>
 
@@ -111,6 +124,7 @@
 
     <aside class="visual" data-carousel aria-label="Giày nổi bật"></aside>
   </div>
+  <script src="js/auth-config.js"></script>
   <script src="js/auth.js"></script>
 </body>
 </html>

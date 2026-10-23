@@ -2,18 +2,20 @@
    Sneaker House — Auth module (FE1)
    JS thuần, không phụ thuộc thư viện.
 
-   ĐIỂM TÍCH HỢP VỚI BACKEND (BE1) — chỉ cần chỉnh ở đây hoặc đặt
-   window.AUTH_CONFIG TRƯỚC khi nạp file này:
+   CẤU HÌNH: sửa trong js/auth-config.js (window.AUTH_CONFIG), nạp trước file này:
 
      window.AUTH_CONFIG = {
+       mock: true,                       // true = dữ liệu giả, không gọi backend
        baseUrl: 'http://localhost:8080/api/auth',
-       endpoints: { login: '/login', register: '/register', forgotPassword: '/forgot-password' }
+       googleClientId: '...apps.googleusercontent.com',
+       endpoints: { login: '/login', register: '/register', forgotPassword: '/forgot-password', google: '/google' }
      };
 
    Body gửi đi (JSON):
      login          { identifier, password, rememberMe }
-     register       { fullName, email, password }
+     register       { fullName, email, phone, password }   // phone luôn dạng 0xxxxxxxxx
      forgotPassword { email }
+     google         { idToken }          // Google ID Token (JWT) lấy từ Google Identity Services
    Lỗi trả về nên có dạng { message: "...", errors?: { tenTruong: "..." } }.
    Nếu BE1 dùng tên trường khác, sửa ở hàm buildPayload().
    ========================================================= */
@@ -23,16 +25,25 @@
   const CONFIG = Object.assign(
     {
       baseUrl: '/api/auth',
-      endpoints: { login: '/login', register: '/register', forgotPassword: '/forgot-password' },
+      endpoints: { login: '/login', register: '/register', forgotPassword: '/forgot-password', google: '/google' },
       redirectAfterLogin: 'index.html',
       productsUrl: 'products.html', // trang danh sách sản phẩm (module khác) — nút trên carousel trỏ tới đây
+      googleClientId: '',           // Google OAuth Client ID (công khai). Không bao giờ đặt Client Secret ở FE.
+      mock: false,                  // true = không gọi backend, dùng dữ liệu giả
     },
     window.AUTH_CONFIG || {}
   );
   CONFIG.endpoints = Object.assign(
-    { login: '/login', register: '/register', forgotPassword: '/forgot-password' },
+    { login: '/login', register: '/register', forgotPassword: '/forgot-password', google: '/google' },
     CONFIG.endpoints
   );
+
+  // Mock chỉ được chạy ở máy dev. Triển khai lên tên miền thật mà quên đặt mock:false vẫn gọi API thật.
+  const IS_LOCAL = ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname);
+  if (CONFIG.mock && !IS_LOCAL) {
+    console.warn('[auth] mock:true bị bỏ qua vì trang không chạy ở localhost — đang gọi API thật.');
+    CONFIG.mock = false;
+  }
 
   /* Hook để BE1/FE khác xử lý token hoặc phiên đăng nhập theo cách của dự án.
      Không lưu mật khẩu ở bất kỳ đâu. Việc lưu token (nếu có) do hook quyết định. */
@@ -252,6 +263,11 @@
 
   /* ---------- Validation ---------- */
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  // Di động Việt Nam: 0xxxxxxxxx hoặc +84xxxxxxxxx / 84xxxxxxxxx (đầu 3, 5, 7, 8, 9)
+  const PHONE_RE = /^(?:\+?84|0)[35789]\d{8}$/;
+  const normalizePhone = (v) => v.replace(/[\s.\-()]/g, '');
+  // Dạng gửi cho BE: luôn 0xxxxxxxxx (đổi +84 / 84 ở đầu thành 0) để cùng một số không bị lưu nhiều dạng
+  const toLocalPhone = (v) => normalizePhone(v).replace(/^\+?84/, '0');
   const PW_RULES = {
     len: (v) => v.length >= 8,
     upper: (v) => /[A-Z]/.test(v),
@@ -268,6 +284,10 @@
     email: (v) => {
       if (!v.trim()) return 'Vui lòng nhập email.';
       return EMAIL_RE.test(v.trim()) ? '' : 'Email chưa đúng định dạng, ví dụ ten@gmail.com.';
+    },
+    phone: (v) => {
+      if (!v.trim()) return 'Vui lòng nhập số điện thoại.';
+      return PHONE_RE.test(normalizePhone(v)) ? '' : 'Số điện thoại chưa đúng, ví dụ 0912345678 hoặc +84912345678.';
     },
     password: (v, form) => {
       if (!v) return 'Vui lòng nhập mật khẩu.';
@@ -378,8 +398,55 @@
     update();
   }
 
+  /* ---------- Mock backend (CONFIG.mock = true) ----------
+     Để FE làm độc lập khi BE1 chưa xong. Trả về đúng "hình dạng" kết quả của request().
+       login     demo@sneakerhouse.vn / Demo@1234 => thành công, còn lại => 401
+       register  taken@sneakerhouse.vn => 409 (email đã tồn tại), còn lại => thành công
+       forgot    fail@sneakerhouse.vn => 500, còn lại => thành công
+       google    nút giả; thêm ?mockGoogle=conflict | invalid | network vào URL để thử các lỗi */
+  const MOCK_DELAY = 700;
+  function mockRequest(path, body) {
+    const E = CONFIG.endpoints;
+    const reply = (status, data, network = false) =>
+      new Promise((resolve) =>
+        setTimeout(() => resolve({ ok: !network && status >= 200 && status < 300, network, status: network ? 0 : status, data }), MOCK_DELAY)
+      );
+    const user = { id: 1, fullName: 'Khách Demo', email: 'demo@sneakerhouse.vn', role: 'CUSTOMER' };
+
+    if (path === E.login) {
+      const ok = String(body.identifier).toLowerCase() === 'demo@sneakerhouse.vn' && body.password === 'Demo@1234';
+      return ok ? reply(200, { user }) : reply(401, { message: 'Email/tên đăng nhập hoặc mật khẩu không đúng.' });
+    }
+    if (path === E.register) {
+      return String(body.email).toLowerCase() === 'taken@sneakerhouse.vn'
+        ? reply(409, { message: 'Email này đã được đăng ký.' })
+        : reply(201, { message: 'Created' });
+    }
+    if (path === E.forgotPassword) {
+      return String(body.email).toLowerCase() === 'fail@sneakerhouse.vn'
+        ? reply(500, { message: 'Máy chủ gặp lỗi. Vui lòng thử lại sau.' })
+        : reply(200, { message: 'OK' });
+    }
+    if (path === E.google) {
+      if (body.idToken === 'mock-network') return reply(0, null, true);
+      if (body.idToken === 'mock-conflict') return reply(409, { message: 'Email này đã đăng ký bằng mật khẩu. Hãy đăng nhập bằng email và mật khẩu.' });
+      if (body.idToken === 'mock-invalid') return reply(401, { message: 'Không xác minh được tài khoản Google.' });
+      return reply(200, { user, isNewUser: false });
+    }
+    return reply(404, { message: 'Mock: endpoint không tồn tại.' });
+  }
+
+  if (CONFIG.mock) {
+    console.info('[auth] Đang ở chế độ MOCK — không gọi backend. Đặt mock:false trong js/auth-config.js để dùng API thật.');
+    const badge = document.createElement('p');
+    badge.className = 'mock-badge';
+    badge.textContent = 'Chế độ mock: chưa gọi backend';
+    document.body.appendChild(badge);
+  }
+
   /* ---------- Gọi API ---------- */
   async function request(path, body) {
+    if (CONFIG.mock) return mockRequest(path, body);
     let res;
     try {
       res = await fetch(CONFIG.baseUrl + path, {
@@ -396,15 +463,16 @@
     return { ok: res.ok, network: false, status: res.status, data };
   }
 
-  function buildPayload(type, form) {
+  function buildPayload(type, form, credential) {
     const f = form.elements;
     if (type === 'login') {
       return { identifier: f.identifier.value.trim(), password: f.password.value, rememberMe: f.rememberMe.checked };
     }
     if (type === 'register') {
       // Việc đồng ý điều khoản (f.terms) chỉ kiểm tra ở FE; nếu BE cần lưu sự đồng ý, thêm trường tại đây.
-      return { fullName: f.fullName.value.trim(), email: f.email.value.trim(), password: f.password.value };
+      return { fullName: f.fullName.value.trim(), email: f.email.value.trim(), phone: toLocalPhone(f.phone.value), password: f.password.value };
     }
+    if (type === 'google') return { idToken: credential }; // Google ID Token (JWT); BE xác minh chữ ký, issuer, audience, hạn dùng
     return { email: f.email.value.trim() };
   }
 
@@ -484,6 +552,21 @@
       setNotice(form, 'error', msgFrom(r, 'Đăng ký chưa thành công. Vui lòng thử lại.'));
     },
 
+    async google(form, credential) {
+      const r = await request(CONFIG.endpoints.google, buildPayload('google', form, credential));
+      if (r.ok) {
+        setGoogleMessage(form, 'success', 'Xác thực Google thành công. Đang chuyển hướng…');
+        if (typeof hooks.onLoginSuccess === 'function') hooks.onLoginSuccess(r.data, { method: 'google' });
+        else setTimeout(() => { window.location.href = CONFIG.redirectAfterLogin; }, 700);
+        return;
+      }
+      if (r.network) setGoogleMessage(form, 'error', 'Không kết nối được tới máy chủ. Vui lòng thử lại sau.');
+      else if (r.status === 409) setGoogleMessage(form, 'error', msgFrom(r, 'Email Google này đã đăng ký bằng mật khẩu. Hãy đăng nhập bằng email và mật khẩu.'));
+      else if (r.status === 400 || r.status === 401) setGoogleMessage(form, 'error', msgFrom(r, 'Không xác minh được tài khoản Google. Vui lòng thử lại.'));
+      else if (r.status === 403) setGoogleMessage(form, 'error', msgFrom(r, 'Tài khoản này không được phép đăng nhập.'));
+      else setGoogleMessage(form, 'error', msgFrom(r, 'Đăng nhập bằng Google chưa thành công. Vui lòng thử lại.'));
+    },
+
     async forgot(form) {
       const r = await request(CONFIG.endpoints.forgotPassword, buildPayload('forgot', form));
       if (r.ok) {
@@ -501,11 +584,154 @@
     },
   };
 
+  /* ---------- Đăng nhập / đăng ký bằng Google (Google Identity Services) ----------
+     Luồng: GIS trả về credential (= Google ID Token) => FE gửi { idToken } tới POST /google.
+     FE KHÔNG tự tin tưởng token: việc xác minh chữ ký/issuer/audience/hạn dùng là của Backend.
+     Lưu ý: nút chính thức của Google (renderButton) không báo sự kiện khi người dùng đóng cửa sổ chọn
+     tài khoản, nên khi đó giao diện đơn giản giữ nguyên trạng thái chờ, không bị kẹt "đang xử lý". */
+  const GIS_SRC = 'https://accounts.google.com/gsi/client';
+  const GOOGLE_G =
+    '<svg class="gbtn__logo" viewBox="0 0 48 48" aria-hidden="true" focusable="false">' +
+    '<path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.9 2.4 30.4 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/>' +
+    '<path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z"/>' +
+    '<path fill="#FBBC05" d="M10.5 28.7a14.5 14.5 0 0 1 0-9.4l-7.9-6.1a24 24 0 0 0 0 21.6l7.9-6.1z"/>' +
+    '<path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.8 2.3-8.4 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg>';
+
+  let gisPromise = null;
+  function loadGis() {
+    if (window.google && window.google.accounts && window.google.accounts.id) return Promise.resolve();
+    if (!gisPromise) {
+      gisPromise = new Promise((resolve, reject) => {
+        const el = document.createElement('script');
+        el.src = GIS_SRC;
+        el.async = true;
+        el.defer = true;
+        el.onload = () => (window.google && window.google.accounts && window.google.accounts.id ? resolve() : reject(new Error('gis')));
+        el.onerror = () => { gisPromise = null; reject(new Error('gis')); }; // cho phép thử lại
+        document.head.appendChild(el);
+      });
+    }
+    return gisPromise;
+  }
+
+  /* Thông báo ngay dưới nút Google (gần chỗ người dùng đang nhìn). type: info | success | error | busy */
+  function setGoogleMessage(form, type, message) {
+    const slot = form.querySelector('[data-google]');
+    if (!slot) return;
+    const box = slot.querySelector('[data-google-status]');
+    if (!message) { box.hidden = true; box.textContent = ''; return; }
+    const kind = type === 'busy' ? 'info' : type;
+    box.className = `social__status notice notice--${kind}`;
+    box.setAttribute('role', type === 'error' ? 'alert' : 'status');
+    box.innerHTML = type === 'busy'
+      ? '<span class="spinner spinner--dark" aria-hidden="true"></span><span></span>'
+      : `${icon(type === 'success' ? 'check' : 'alert')}<span></span>`;
+    box.lastChild.textContent = message;
+    box.hidden = false;
+  }
+
+  function setGoogleBusy(form, busy) {
+    const slot = form.querySelector('[data-google]');
+    slot.classList.toggle('is-busy', busy);
+    slot.setAttribute('aria-busy', String(busy));
+    form.querySelector('[type="submit"]').disabled = busy;
+    if (busy) setGoogleMessage(form, 'busy', 'Đang xác thực với Google…');
+  }
+
+  async function processGoogle(form, credential) {
+    if (form.dataset.busy === 'true') return;
+    if (!credential) {
+      setGoogleMessage(form, 'error', 'Google không trả về thông tin đăng nhập. Vui lòng thử lại.');
+      return;
+    }
+    form.dataset.busy = 'true';
+    setNotice(form, 'info', '');
+    renderSummary(form, []);
+    setGoogleBusy(form, true);
+    try {
+      await handlers.google(form, credential);
+    } finally {
+      form.dataset.busy = 'false';
+      setGoogleBusy(form, false);
+    }
+  }
+
+  function initGoogle(form) {
+    const slot = form.querySelector('[data-google]');
+    if (!slot) return;
+    const isRegister = form.dataset.form === 'register';
+    const holder = slot.querySelector('[data-google-btn]');
+    const labelText = isRegister ? 'Đăng ký bằng Google' : 'Đăng nhập bằng Google';
+
+    const unavailable = (message, retry) => {
+      holder.innerHTML = '';
+      setGoogleMessage(form, 'info', message);
+      if (retry) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn btn--ghost btn--small';
+        btn.textContent = 'Thử lại';
+        btn.addEventListener('click', () => { setGoogleMessage(form, 'info', ''); holder.innerHTML = ''; start(); });
+        holder.appendChild(btn);
+      }
+    };
+
+    // Chế độ mock không có Client ID: nút giả để thử luồng thành công/lỗi mà không cần Google
+    if (!CONFIG.googleClientId) {
+      if (!CONFIG.mock) return unavailable('Đăng nhập bằng Google chưa được cấu hình (thiếu googleClientId).');
+      const variant = new URLSearchParams(window.location.search).get('mockGoogle');
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'gbtn';
+      btn.innerHTML = `${GOOGLE_G}<span>${labelText} (mô phỏng)</span>`;
+      btn.addEventListener('click', () => processGoogle(form, variant ? `mock-${variant}` : 'mock-google-token'));
+      holder.appendChild(btn);
+      return;
+    }
+
+    let initialized = false;
+    let lastWidth = 0;
+    const render = () => {
+      const width = Math.max(200, Math.min(400, Math.floor(holder.clientWidth || 320)));
+      if (width === lastWidth && holder.childElementCount) return;
+      lastWidth = width;
+      holder.innerHTML = '';
+      window.google.accounts.id.renderButton(holder, {
+        type: 'standard', theme: 'outline', size: 'large', shape: 'rectangular', logo_alignment: 'left',
+        text: isRegister ? 'signup_with' : 'signin_with', locale: 'vi', width,
+      });
+    };
+
+    function start() {
+      holder.setAttribute('aria-busy', 'true');
+      loadGis()
+        .then(() => {
+          if (!initialized) {
+            window.google.accounts.id.initialize({
+              client_id: CONFIG.googleClientId,
+              callback: (resp) => processGoogle(form, resp && resp.credential),
+              auto_select: false,
+              cancel_on_tap_outside: true,
+              ux_mode: 'popup',
+            });
+            initialized = true;
+          }
+          render();
+          let t = null;
+          window.addEventListener('resize', () => { clearTimeout(t); t = setTimeout(render, 150); });
+        })
+        .catch(() => unavailable('Không tải được Google. Kiểm tra kết nối mạng rồi thử lại, hoặc dùng email và mật khẩu.', true))
+        .finally(() => holder.removeAttribute('aria-busy'));
+    }
+    start();
+  }
+
   /* ---------- Gắn vào form ---------- */
   document.querySelectorAll('form[data-form]').forEach((form) => {
     const type = form.dataset.form;
     const inputs = Array.from(form.querySelectorAll('.input, [data-validate]'));
     initStrength(form);
+    initGoogle(form);
 
     inputs.forEach((input) => {
       if (input.type === 'checkbox') {
