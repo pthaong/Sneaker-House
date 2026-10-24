@@ -29,9 +29,8 @@
         <div class="form-wrap">
           <noscript><p class="notice notice--error">Trang này cần bật JavaScript để đăng nhập và xem ảnh nổi bật. Vui lòng bật JavaScript rồi tải lại trang.</p></noscript>
           <div data-intro>
-            <p class="eyebrow">Tham gia cùng chúng tôi</p>
             <h1 class="title">Tạo tài khoản</h1>
-            <p class="lead">Chỉ mất một phút để bắt đầu mua sắm và lưu đôi giày bạn thích.</p>
+            <p class="lead">Tham gia Sneaker House để trải nghiệm mua sắm tuyệt vời hơn!</p>
           </div>
 
           <form class="form" data-form="register" novalidate>
@@ -42,27 +41,37 @@
             <div class="notice" data-notice hidden></div>
 
             <div class="field">
-              <label for="fullName">Họ và tên</label>
-              <input class="input" id="fullName" name="fullName" type="text" autocomplete="name" aria-describedby="fullName-error" required>
+              <div class="control">
+                <span class="control__icon" data-icon="user" aria-hidden="true"></span>
+                <label class="field__label" for="fullName">Họ và tên</label>
+                <input class="input" id="fullName" name="fullName" type="text" placeholder="Nguyễn Văn A" autocomplete="name" aria-describedby="fullName-error" required>
+              </div>
               <p class="field__error" id="fullName-error" hidden></p>
             </div>
 
             <div class="field">
-              <label for="email">Email</label>
-              <input class="input" id="email" name="email" type="email" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" aria-describedby="email-error" required>
+              <div class="control">
+                <span class="control__icon" data-icon="mail" aria-hidden="true"></span>
+                <label class="field__label" for="email">Email</label>
+                <input class="input" id="email" name="email" type="email" placeholder="example@gmail.com" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" aria-describedby="email-error" required>
+              </div>
               <p class="field__error" id="email-error" hidden></p>
             </div>
 
             <div class="field">
-              <label for="phone">Số điện thoại</label>
-              <input class="input" id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" aria-describedby="phone-error" required>
+              <div class="control">
+                <span class="control__icon" data-icon="phone" aria-hidden="true"></span>
+                <label class="field__label" for="phone">Số điện thoại</label>
+                <input class="input" id="phone" name="phone" type="tel" placeholder="09xxxxxxxx" autocomplete="tel" inputmode="tel" aria-describedby="phone-error" required>
+              </div>
               <p class="field__error" id="phone-error" hidden></p>
             </div>
 
             <div class="field">
-              <label for="password">Mật khẩu</label>
-              <div class="pw">
-                <input class="input" id="password" name="password" type="password" autocomplete="new-password" aria-describedby="password-error password-reqs" required>
+              <div class="control control--pw">
+                <span class="control__icon" data-icon="lock" aria-hidden="true"></span>
+                <label class="field__label" for="password">Mật khẩu</label>
+                <input class="input" id="password" name="password" type="password" placeholder="Tối thiểu 8 ký tự" autocomplete="new-password" aria-describedby="password-error password-reqs" required>
                 <button class="pw__toggle" type="button" data-toggle-pw="password"></button>
               </div>
               <p class="field__error" id="password-error" hidden></p>
@@ -79,9 +88,10 @@
             </div>
 
             <div class="field">
-              <label for="confirmPassword">Nhập lại mật khẩu</label>
-              <div class="pw">
-                <input class="input" id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" aria-describedby="confirmPassword-error" required>
+              <div class="control control--pw">
+                <span class="control__icon" data-icon="lock" aria-hidden="true"></span>
+                <label class="field__label" for="confirmPassword">Xác nhận mật khẩu</label>
+                <input class="input" id="confirmPassword" name="confirmPassword" type="password" placeholder="Nhập lại mật khẩu" autocomplete="new-password" aria-describedby="confirmPassword-error" required>
                 <button class="pw__toggle" type="button" data-toggle-pw="confirmPassword"></button>
               </div>
               <p class="field__error" id="confirmPassword-error" hidden></p>
@@ -90,7 +100,7 @@
             <div class="field">
               <label class="check check--top" for="terms">
                 <input type="checkbox" id="terms" name="terms" data-validate aria-describedby="terms-error" required>
-                <span>Tôi đồng ý với <a class="link link--small" href="terms.html" target="_blank" rel="noopener">Điều khoản sử dụng<span class="sr-only"> (mở tab mới)</span></a> và <a class="link link--small" href="privacy.html" target="_blank" rel="noopener">Chính sách bảo mật<span class="sr-only"> (mở tab mới)</span></a>.</span>
+                <span>Tôi đồng ý với <a class="link link--accent link--small" href="terms.html" target="_blank" rel="noopener">Điều khoản sử dụng<span class="sr-only"> (mở tab mới)</span></a> và <a class="link link--accent link--small" href="privacy.html" target="_blank" rel="noopener">Chính sách bảo mật<span class="sr-only"> (mở tab mới)</span></a> của Sneaker House</span>
               </label>
               <p class="field__error" id="terms-error" hidden></p>
             </div>
@@ -101,13 +111,13 @@
             </button>
 
             <div class="social" data-google>
-              <p class="divider"><span>hoặc</span></p>
+              <p class="divider"><span>hoặc đăng ký bằng</span></p>
               <div class="social__btn" data-google-btn></div>
               <div class="social__status notice" data-google-status hidden></div>
-              <p class="social__note">Khi đăng ký bằng Google, bạn đồng ý với <a class="link link--small" href="terms.html" target="_blank" rel="noopener">Điều khoản sử dụng<span class="sr-only"> (mở tab mới)</span></a> và <a class="link link--small" href="privacy.html" target="_blank" rel="noopener">Chính sách bảo mật<span class="sr-only"> (mở tab mới)</span></a>.</p>
+              <p class="social__note">Khi đăng ký bằng Google, bạn đồng ý với <a class="link link--accent link--small" href="terms.html" target="_blank" rel="noopener">Điều khoản sử dụng<span class="sr-only"> (mở tab mới)</span></a> và <a class="link link--accent link--small" href="privacy.html" target="_blank" rel="noopener">Chính sách bảo mật<span class="sr-only"> (mở tab mới)</span></a>.</p>
             </div>
 
-            <p class="switch">Đã có tài khoản? <a class="link" href="login.html" data-nav>Quay lại đăng nhập</a></p>
+            <p class="switch">Đã có tài khoản? <a class="link link--accent" href="login.html" data-nav>Đăng nhập ngay</a></p>
           </form>
 
           <section class="status" data-status hidden>
