@@ -18,19 +18,27 @@ import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
+import org.springframework.beans.factory.annotation.Qualifier;
 import java.util.List;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 
 @Configuration
 public class SecurityConfig {
     @Bean PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }
 
     @Bean
-    DaoAuthenticationProvider authenticationProvider(CustomUserDetailsService users, PasswordEncoder encoder) {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(users);
-        provider.setPasswordEncoder(encoder);
-        return provider;
-    }
+DaoAuthenticationProvider authenticationProvider(
+        CustomUserDetailsService users,
+        PasswordEncoder encoder) {
+
+    DaoAuthenticationProvider provider =
+        new DaoAuthenticationProvider(encoder);
+
+    provider.setUserDetailsService(users);
+
+    return provider;
+}
 
     @Bean AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
@@ -39,18 +47,33 @@ public class SecurityConfig {
     @Bean SecurityContextRepository securityContextRepository() {
         return new HttpSessionSecurityContextRepository();
     }
-
     @Bean
-    SecurityFilterChain filterChain(HttpSecurity http, DaoAuthenticationProvider provider,
-                                    CorsConfigurationSource cors, SecurityContextRepository contextRepository) throws Exception {
+SecurityFilterChain filterChain(
+        HttpSecurity http,
+        DaoAuthenticationProvider provider,
+        @Qualifier("corsConfigurationSource") CorsConfigurationSource cors,
+        SecurityContextRepository contextRepository
+) throws Exception {
         http.authenticationProvider(provider)
             .cors(c -> c.configurationSource(cors))
-            .csrf(Customizer.withDefaults())
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                .requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/google",
-                    "/api/auth/forgot-password", "/api/auth/reset-password").permitAll()
-                .anyRequest().authenticated())
+            .csrf(csrf -> csrf
+    .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+    .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+    .ignoringRequestMatchers("/error")
+)
+          .authorizeHttpRequests(auth -> auth
+    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+    .requestMatchers(
+        "/api/auth/csrf",
+        "/api/auth/register",
+        "/api/auth/login",
+        "/api/auth/google",
+        "/api/auth/forgot-password",
+        "/api/auth/verify-otp",
+        "/api/auth/resend-otp",
+        "/api/auth/reset-password"
+    ).permitAll()
+    .anyRequest().authenticated())
             .securityContext(c -> c.securityContextRepository(contextRepository))
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
             .formLogin(f -> f.disable())
@@ -61,7 +84,14 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:5173"));
+        config.setAllowedOrigins(List.of(
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "http://localhost:5500",
+    "http://127.0.0.1:5500",
+    "http://localhost:5501",
+    "http://127.0.0.1:5501"
+));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Content-Type", "X-XSRF-TOKEN", "X-Requested-With"));
         config.setAllowCredentials(true);
