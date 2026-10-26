@@ -25,7 +25,15 @@
   const CONFIG = Object.assign(
     {
       baseUrl: '/api/auth',
-      endpoints: { login: '/login', register: '/register', forgotPassword: '/forgot-password', google: '/google' },
+      endpoints: {
+  login: '/login',
+  register: '/register',
+  forgotPassword: '/forgot-password',
+  verifyOtp: '/verify-otp',
+  resendOtp: '/resend-otp',
+  resetPassword: '/reset-password',
+  google: '/google'
+},
       redirectAfterLogin: 'index.html',
       productsUrl: 'products.html', // trang danh sách sản phẩm (module khác) — nút trên carousel trỏ tới đây
       googleClientId: '',           // Google OAuth Client ID (công khai). Không bao giờ đặt Client Secret ở FE.
@@ -34,9 +42,17 @@
     window.AUTH_CONFIG || {}
   );
   CONFIG.endpoints = Object.assign(
-    { login: '/login', register: '/register', forgotPassword: '/forgot-password', google: '/google' },
-    CONFIG.endpoints
-  );
+  {
+    login: '/login',
+    register: '/register',
+    forgotPassword: '/forgot-password',
+    verifyOtp: '/verify-otp',
+    resendOtp: '/resend-otp',
+    resetPassword: '/reset-password',
+    google: '/google'
+  },
+  CONFIG.endpoints
+);
 
   // Mock chỉ được chạy ở máy dev. Triển khai lên tên miền thật mà quên đặt mock:false vẫn gọi API thật.
   const IS_LOCAL = ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname);
@@ -280,6 +296,20 @@
   };
 
   const validators = {
+    otp: (v) => {
+  if (!v.trim()) return 'Vui lòng nhập mã OTP.';
+  return /^[0-9]{6}$/.test(v.trim())
+    ? ''
+    : 'Mã OTP phải gồm đúng 6 chữ số.';
+},
+
+newPassword: (v) => {
+  if (!v) return 'Vui lòng nhập mật khẩu mới.';
+  if (v.length < 8 || v.length > 72) {
+    return 'Mật khẩu phải có từ 8 đến 72 ký tự.';
+  }
+  return '';
+},
     identifier: (v) => (v.trim() ? '' : 'Vui lòng nhập email hoặc tên đăng nhập.'),
     fullName: (v) => {
       if (!v.trim()) return 'Vui lòng nhập họ và tên.';
@@ -302,9 +332,19 @@
     },
     terms: (_v, _form, input) => (input.checked ? '' : 'Vui lòng đồng ý với Điều khoản sử dụng và Chính sách bảo mật.'),
     confirmPassword: (v, form) => {
-      if (!v) return 'Vui lòng nhập lại mật khẩu.';
-      return v === form.elements.password.value ? '' : 'Mật khẩu nhập lại chưa khớp.';
-    },
+  if (!v) return 'Vui lòng nhập lại mật khẩu.';
+
+  const originalPassword =
+    form.elements.newPassword || form.elements.password;
+
+  if (!originalPassword) {
+    return 'Không tìm thấy trường mật khẩu.';
+  }
+
+  return v === originalPassword.value
+    ? ''
+    : 'Mật khẩu nhập lại chưa khớp.';
+},
   };
 
   const errorId = (input) => `${input.id}-error`;
@@ -449,29 +489,78 @@
   }
 
   /* ---------- Gọi API ---------- */
-  async function request(path, body) {
-    if (CONFIG.mock) return mockRequest(path, body);
-    let res;
-    try {
-      res = await fetch(CONFIG.baseUrl + path, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(body),
-      });
-    } catch (_) {
-      return { ok: false, network: true, status: 0, data: null };
+  /* ---------- Gọi API Backend có CSRF ---------- */
+async function request(path, body) {
+  if (CONFIG.mock) return mockRequest(path, body);
+
+  try {
+    // Bước 1: Lấy CSRF Token từ Backend
+    const csrfResponse = await fetch(CONFIG.baseUrl + '/csrf', {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        Accept: 'application/json'
+      }
+    });
+
+    if (!csrfResponse.ok) {
+      return {
+        ok: false,
+        network: false,
+        status: csrfResponse.status,
+        data: { message: 'Không lấy được CSRF Token từ Backend.' }
+      };
     }
+
+    const csrfData = await csrfResponse.json();
+
+    // Bước 2: Gửi yêu cầu POST kèm CSRF Token
+    const response = await fetch(CONFIG.baseUrl + path, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        [csrfData.headerName || 'X-XSRF-TOKEN']: csrfData.token
+      },
+      body: JSON.stringify(body)
+    });
+
     let data = null;
-    try { data = await res.json(); } catch (_) { /* phản hồi không phải JSON */ }
-    return { ok: res.ok, network: false, status: res.status, data };
+
+    try {
+      data = await response.json();
+    } catch (_) {
+      // Backend có thể trả response không phải JSON
+    }
+
+    return {
+      ok: response.ok,
+      network: false,
+      status: response.status,
+      data
+    };
+
+  } catch (error) {
+    console.error('[auth] API request failed:', error);
+
+    return {
+      ok: false,
+      network: true,
+      status: 0,
+      data: null
+    };
   }
+}
 
   function buildPayload(type, form, credential) {
     const f = form.elements;
     if (type === 'login') {
-      return { identifier: f.identifier.value.trim(), password: f.password.value, rememberMe: f.rememberMe.checked };
-    }
+  return {
+    email: f.identifier.value.trim(),
+    password: f.password.value
+  };
+}
     if (type === 'register') {
       // Việc đồng ý điều khoản (f.terms) chỉ kiểm tra ở FE; nếu BE cần lưu sự đồng ý, thêm trường tại đây.
       return { fullName: f.fullName.value.trim(), email: f.email.value.trim(), phone: toLocalPhone(f.phone.value), password: f.password.value };
@@ -574,19 +663,184 @@
     async forgot(form) {
       const r = await request(CONFIG.endpoints.forgotPassword, buildPayload('forgot', form));
       if (r.ok) {
-        // Thông điệp trung tính, không tiết lộ email có tồn tại hay không
-        const email = form.elements.email.value.trim();
-        return showStatus(form, {
-          title: 'Kiểm tra hộp thư của bạn',
-          text: `Nếu ${email} có trong hệ thống, hướng dẫn đặt lại mật khẩu sẽ được gửi tới địa chỉ này. Chưa thấy email? Hãy kiểm tra cả thư mục spam.`,
-        });
-      }
+  // Lưu email trong bộ nhớ để sử dụng khi xác minh OTP
+  const email = form.elements.email.value.trim();
+
+  window.forgotPasswordEmail = email;
+
+  // Ẩn form nhập email
+  form.hidden = true;
+
+  // Hiển thị form nhập OTP
+  const otpForm = document.querySelector('[data-otp-form]');
+
+  if (otpForm) {
+    otpForm.hidden = false;
+    otpForm.elements.otp.focus();
+  }
+
+  // Cập nhật hướng dẫn
+  const intro = document.querySelector('[data-intro]');
+
+  if (intro) {
+    intro.querySelector('.title').textContent = 'Xác minh OTP';
+    intro.querySelector('.lead').textContent =
+      'Nếu email có trong hệ thống, mã OTP đã được gửi. Vui lòng kiểm tra hộp thư và thư mục spam.';
+  }
+
+  return;
+}
       if (r.network || r.status === 404 || r.status === 501) {
         return setNotice(form, 'info', 'Chức năng khôi phục mật khẩu hiện chưa được kết nối với máy chủ nên chưa thể gửi email. Vui lòng quay lại sau.');
       }
       setNotice(form, 'error', msgFrom(r, 'Chưa gửi được yêu cầu. Vui lòng thử lại.'));
-    },
-  };
+},
+
+async verifyOtp(form) {
+  const email = window.forgotPasswordEmail;
+  const otp = form.elements.otp.value.trim();
+
+  if (!email) {
+    return setNotice(form, 'error', 'Không tìm thấy email. Vui lòng nhập lại email.');
+  }
+
+  const r = await request(CONFIG.endpoints.verifyOtp, {
+    email,
+    otp
+  });
+
+  if (r.ok) {
+    const resetToken = r.data && r.data.resetToken;
+
+    if (!resetToken) {
+      return setNotice(form, 'error', 'Máy chủ không trả về mã đặt lại mật khẩu.');
+    }
+
+    // Chỉ giữ token trong bộ nhớ của trang
+    window.passwordResetToken = resetToken;
+
+    // Ẩn form OTP
+    form.hidden = true;
+
+    // Hiển thị form mật khẩu mới
+    const resetForm = document.querySelector('[data-reset-form]');
+
+    if (resetForm) {
+      resetForm.hidden = false;
+      resetForm.elements.newPassword.focus();
+    }
+
+    // Cập nhật tiêu đề
+    const intro = document.querySelector('[data-intro]');
+
+    if (intro) {
+      intro.querySelector('.title').textContent = 'Đặt lại mật khẩu';
+      intro.querySelector('.lead').textContent =
+        'Tạo mật khẩu mới có từ 8 đến 72 ký tự để bảo vệ tài khoản của bạn.';
+    }
+
+    return;
+  }
+
+  if (r.network) {
+    return setNotice(form, 'error', 'Không kết nối được tới máy chủ. Vui lòng thử lại.');
+  }
+
+  if (applyServerFieldErrors(form, r.data)) return;
+
+ setNotice(form, 'error', msgFrom(r, 'Mã OTP không hợp lệ hoặc đã hết hạn.'));
+},
+async resetPassword(form) {
+  const token = window.passwordResetToken;
+  const newPassword = form.elements.newPassword.value;
+
+  if (!token) {
+    return setNotice(
+      form,
+      'error',
+      'Phiên đặt lại mật khẩu không hợp lệ. Vui lòng yêu cầu mã OTP mới.'
+    );
+  }
+
+  const r = await request(CONFIG.endpoints.resetPassword, {
+    token,
+    newPassword
+  });
+
+  if (r.ok) {
+    // Xóa token và email khỏi bộ nhớ sau khi đổi mật khẩu
+    delete window.passwordResetToken;
+    delete window.forgotPasswordEmail;
+
+    form.reset();
+
+    showStatus(form, {
+      title: 'Đổi mật khẩu thành công',
+      text: 'Mật khẩu của bạn đã được cập nhật. Hãy đăng nhập bằng mật khẩu mới.'
+    });
+
+    return;
+  }
+
+  if (r.network) {
+    return setNotice(
+      form,
+      'error',
+      'Không kết nối được tới máy chủ. Vui lòng thử lại.'
+    );
+  }
+
+  if (applyServerFieldErrors(form, r.data)) return;
+
+  setNotice(
+    form,
+    'error',
+    msgFrom(r, 'Không thể đặt lại mật khẩu. Mã xác thực có thể đã hết hạn.')
+  );
+},
+async resendOtp(form) {
+  const email = window.forgotPasswordEmail;
+
+  if (!email) {
+    return setNotice(
+      form,
+      'error',
+      'Không tìm thấy email. Vui lòng quay lại và nhập email.'
+    );
+  }
+
+  const r = await request(CONFIG.endpoints.resendOtp, {
+    email
+  });
+
+  if (r.ok) {
+    form.elements.otp.value = '';
+
+    setNotice(
+      form,
+      'success',
+      'Nếu email có trong hệ thống, mã OTP mới đã được gửi. Vui lòng kiểm tra hộp thư.'
+    );
+
+    form.elements.otp.focus();
+    return;
+  }
+
+  if (r.network) {
+    return setNotice(
+      form,
+      'error',
+      'Không kết nối được tới máy chủ. Vui lòng thử lại.'
+    );
+  }
+
+  setNotice(
+    form,
+    'error',
+    msgFrom(r, 'Không thể gửi lại mã OTP. Vui lòng thử lại sau.')
+  );
+},
+};
 
   /* ---------- Đăng nhập / đăng ký bằng Google (Google Identity Services) ----------
      Luồng: GIS trả về credential (= Google ID Token) => FE gửi { idToken } tới POST /google.
@@ -731,6 +985,26 @@
   }
 
   /* ---------- Gắn vào form ---------- */
+  // Xử lý nút Gửi lại mã OTP
+document.querySelectorAll('[data-resend-otp]').forEach((button) => {
+  button.addEventListener('click', async () => {
+    const form = button.closest('form');
+
+    if (!form || form.dataset.busy === 'true') return;
+
+    form.dataset.busy = 'true';
+    button.disabled = true;
+
+    setNotice(form, 'info', 'Đang gửi lại mã OTP...');
+
+    try {
+      await handlers.resendOtp(form);
+    } finally {
+      button.disabled = false;
+      form.dataset.busy = 'false';
+    }
+  });
+});
   document.querySelectorAll('form[data-form]').forEach((form) => {
     const type = form.dataset.form;
     const inputs = Array.from(form.querySelectorAll('.input, [data-validate]'));
