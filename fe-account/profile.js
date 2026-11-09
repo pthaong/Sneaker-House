@@ -7,16 +7,16 @@
 const CONFIG = {
   API_BASE: 'http://localhost:8080',
   ENDPOINTS: {
-    profile: '/api/users/profile',          // GET: lấy hồ sơ | PUT: cập nhật hồ sơ
-    avatar: '/api/users/profile/avatar',    // POST multipart/form-data, field "file"
+    profile: '/api/profile',
+    avatar: '/api/profile/avatar',    // POST multipart/form-data, field "file"
     logout: '/api/auth/logout',             // POST: hủy session (Authentication đã có)
   },
   // NOTE: tài liệu API Contract ghi /api/profile; yêu cầu công việc ghi /api/users/profile.
   // Nếu BE chạy theo tài liệu thì đổi 2 dòng profile/avatar ở trên thành '/api/profile' và '/api/profile/avatar'.
-  LOGIN_PAGE: 'login.html',                 // trang đăng nhập của nhóm (Authentication)
+  LOGIN_PAGE: '../fe-auth/login.html',            // trang đăng nhập của nhóm (Authentication)
   REQUEST_TIMEOUT: 15000,                   // ms
   SESSION_REDIRECT_DELAY: 1800,             // ms: chờ để người dùng đọc thông báo hết phiên
-  MAX_AVATAR_SIZE: 2 * 1024 * 1024,
+  MAX_AVATAR_SIZE: 5 * 1024 * 1024,
   AVATAR_TYPES: ['image/jpeg', 'image/png'],
 };
 
@@ -78,7 +78,7 @@ const STATUS_MESSAGES = {
   403: 'Bạn không có quyền thực hiện thao tác này.',
   404: 'Không tìm thấy dữ liệu yêu cầu.',
   409: 'Dữ liệu bị trùng hoặc xung đột. Vui lòng kiểm tra lại.',
-  413: 'Ảnh vượt quá dung lượng tối đa 2MB.',
+  413: 'Ảnh vượt quá dung lượng tối đa 5MB.',
   415: 'Định dạng ảnh không được hỗ trợ (chỉ JPG, PNG).',
   429: 'Bạn thao tác quá nhanh. Vui lòng thử lại sau.',
   500: 'Máy chủ gặp lỗi. Vui lòng thử lại sau.',
@@ -95,7 +95,21 @@ async function api(path, options = {}) {
   // JSON -> tự đặt Content-Type; FormData -> để trình duyệt tự thêm boundary
   if (options.body && !(options.body instanceof FormData)) headers['Content-Type'] = 'application/json';
   // CSRF (chỉ gửi nếu Spring Security có cấp cookie XSRF-TOKEN)
-  if (method !== 'GET') { const xsrf = getCookie('XSRF-TOKEN'); if (xsrf) headers['X-XSRF-TOKEN'] = xsrf; }
+if (method !== 'GET') {
+  const csrfResponse = await fetch(
+    CONFIG.API_BASE + '/api/auth/csrf',
+    { credentials: 'include' }
+  );
+
+  if (!csrfResponse.ok) {
+    throw new ApiError('Không thể lấy CSRF Token.', csrfResponse.status);
+  }
+
+  const csrfData = await csrfResponse.json();
+
+  headers[csrfData.headerName || 'X-XSRF-TOKEN'] = csrfData.token;
+}
+
 
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), CONFIG.REQUEST_TIMEOUT);
@@ -112,7 +126,14 @@ async function api(path, options = {}) {
 
   // Hết phiên: 401, hoặc Spring redirect sang trang login (trả HTML)
   const isJson = (res.headers.get('content-type') || '').includes('json');
-  if (res.status === 401 || (res.redirected && !isJson)) {
+if (
+  res.status === 401 ||
+  (res.status === 403 &&
+    method === 'GET' &&
+    path === CONFIG.ENDPOINTS.profile) ||
+  (res.redirected && !isJson)
+) {
+
     handleSessionExpired();
     const err = new ApiError('Phiên đăng nhập đã hết hạn.', 401); err.handled = true; throw err;
   }
@@ -166,7 +187,7 @@ function resolveAvatarUrl(url, bust) {
 function render(p, { bustAvatar = false } = {}) {
   el.fullName.value = p.fullName || '';
   el.email.value = p.email || '';
-  el.phone.value = p.phone || '';
+  el.phone.value = p.phoneNumber || '';
   el.dob.value = (p.birthDate || '').slice(0, 10);
   setGender(p.gender || '');
   const src = resolveAvatarUrl(p.avatarUrl, bustAvatar);
@@ -174,20 +195,28 @@ function render(p, { bustAvatar = false } = {}) {
   renderMethods(p);
 }
 
+
 function renderMethods(p) {
-  const methods = Array.isArray(p.loginMethods) ? p.loginMethods : [];
+  const method = p.loginMethod || '';
+
   const state = {
-    PASSWORD: methods.includes('EMAIL_PASSWORD') || methods.includes('PASSWORD'),
-    GOOGLE: methods.includes('GOOGLE') || p.googleLinked === true,
+    PASSWORD: method === 'EMAIL_PASSWORD' || method === 'BOTH',
+    GOOGLE: method === 'GOOGLE' || method === 'BOTH'
   };
+
   $$('#methodList .method').forEach(li => {
     const type = li.dataset.type;
     const on = !!state[type];
     const tag = $('[data-status]', li);
-    tag.textContent = on ? (type === 'PASSWORD' ? 'Đang sử dụng' : 'Đã liên kết') : 'Chưa liên kết';
+
+    tag.textContent = on
+      ? (type === 'PASSWORD' ? 'Đang sử dụng' : 'Đã liên kết')
+      : 'Chưa liên kết';
+
     tag.classList.toggle('is-off', !on);
   });
 }
+
 
 /* ---------- Validate phía FE ---------- */
 const PHONE_RE = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
@@ -242,7 +271,7 @@ el.avatarInput.addEventListener('change', () => {
     el.avatarError.textContent = 'Chỉ hỗ trợ định dạng JPG, PNG.'; el.avatarInput.value = ''; return;
   }
   if (file.size > CONFIG.MAX_AVATAR_SIZE) {
-    el.avatarError.textContent = 'Ảnh vượt quá 2MB, vui lòng chọn ảnh nhỏ hơn.'; el.avatarInput.value = ''; return;
+    el.avatarError.textContent = 'Ảnh vượt quá 5MB, vui lòng chọn ảnh nhỏ hơn.'; el.avatarInput.value = ''; return;
   }
   if (previewUrl) URL.revokeObjectURL(previewUrl);
   pendingAvatar = file;
@@ -276,7 +305,7 @@ form.addEventListener('submit', async (e) => {
 
   const payload = {
     fullName: el.fullName.value.trim().replace(/\s+/g, ' '),
-    phone: el.phone.value.replace(/[\s.-]/g, ''),
+    phoneNumber: el.phone.value.replace(/[\s.-]/g, ''),
     birthDate: el.dob.value,
     gender: getGender(),
   }; // không gửi email (chỉ đọc)
@@ -303,7 +332,7 @@ form.addEventListener('submit', async (e) => {
     const fresh = await loadProfile({ silent: true });
     if (!fresh) { toast('Đã lưu, nhưng chưa tải lại được dữ liệu mới. Hãy tải lại trang để kiểm tra.', 'error', 6000); return; }
 
-    const same = fresh.fullName === payload.fullName && (fresh.phone || '') === payload.phone &&
+    const same = fresh.fullName === payload.fullName && (fresh.phoneNumber || '') === payload.phoneNumber &&
                  (fresh.birthDate || '').slice(0, 10) === payload.birthDate && fresh.gender === payload.gender;
     if (same) toast('Cập nhật thông tin thành công!', 'success');
     else toast('Đã lưu nhưng dữ liệu máy chủ trả về khác dữ liệu bạn nhập. Vui lòng kiểm tra lại.', 'error', 6000);

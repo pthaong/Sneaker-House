@@ -189,3 +189,10 @@ input[type="date"]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.85
   .actions .btn{width:100%;min-width:0}
   .topbar__inner span:nth-child(n+3){display:none}
 }
+/* Logo thống nhất với trang Authentication */
+.logo__image {
+  display: block;
+  width: 240px;
+  max-width: 100%;
+  height: auto;
+}
