@@ -6,7 +6,13 @@ import java.time.LocalDate;
 public class UserAccount {
 @Id @GeneratedValue(strategy=GenerationType.IDENTITY) private Long id;
 @Column(nullable=false,length=254) private String email;
-@Column(name="full_name",nullable=false,length=120) private String fullName;
+@Column(
+    name = "full_name",
+    nullable = false,
+    length = 120,
+    columnDefinition = "NVARCHAR(120)"
+)
+private String fullName;
 @Column(name="password_hash",length=100) private String passwordHash;
 @Column(name="google_sub",length=255,unique=true) private String googleSub;
 @Column(nullable=false,length=30) private String role="CUSTOMER";
