@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bảo mật tài khoản — Sneaker House</title>
+  <meta name="description" content="Đổi mật khẩu, xem phương thức đăng nhập và quản lý các thiết bị đang đăng nhập tài khoản Sneaker House.">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="css/account.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Bỏ qua tới nội dung chính</a>
+
+  <div class="promo">
+    <div class="wrap promo__in">
+      <span><i data-icon="truck"></i>Miễn phí giao hàng cho đơn từ 500.000đ</span>
+      <span><i data-icon="refresh"></i>Đổi trả trong 7 ngày</span>
+      <span><i data-icon="shieldCheck"></i>Hàng chính hãng 100%</span>
+      <span><i data-icon="pin"></i>Hệ thống cửa hàng</span>
+      <span><i data-icon="package"></i>Tra cứu đơn hàng</span>
+      <span><i data-icon="headset"></i>Hỗ trợ 24/7: <b class="promo__tel">1900 1234</b></span>
+    </div>
+  </div>
+
+  <header class="head">
+    <div class="wrap head__in">
+      <a class="logo" href="index.html" data-link="home" aria-label="Sneaker House — về trang chủ"><img src="assets/logo-dark.png" alt="Sneaker House" width="1000" height="290"></a>
+      <form class="search" role="search" action="products.html" method="get" data-search>
+        <label class="sr-only" for="q">Tìm kiếm</label>
+        <input id="q" name="q" type="search" placeholder="Tìm kiếm giày, thương hiệu, mẫu mã..." autocomplete="off">
+        <button type="submit" aria-label="Tìm kiếm"><i data-icon="search"></i></button>
+      </form>
+      <nav class="tools" aria-label="Tiện ích">
+        <a class="tool" href="wishlist.html" data-link="wishlist"><i data-icon="heart"></i><span>Yêu thích</span></a>
+        <div class="menu" data-menu>
+          <button class="tool" type="button" aria-expanded="false" aria-controls="account-menu" data-menu-btn>
+            <i data-icon="user"></i><span data-user-name>Tài khoản</span><i data-icon="chevronDown" class="chev"></i>
+          </button>
+          <ul class="menu__list" id="account-menu" hidden>
+            <li><a href="profile.html" data-link="profile">Thông tin cá nhân</a></li>
+            <li><a href="account-security.html" aria-current="page">Bảo mật tài khoản</a></li>
+            <li><button type="button" data-logout>Đăng xuất</button></li>
+          </ul>
+        </div>
+        <a class="tool" href="cart.html" data-link="cart"><i data-icon="cart"></i><span>Giỏ hàng</span></a>
+      </nav>
+    </div>
+    <div class="wrap navrow">
+      <a class="cat" href="products.html" data-link="products"><i data-icon="menu"></i>Danh mục sản phẩm<i data-icon="chevronDown"></i></a>
+      <nav class="mainnav" aria-label="Điều hướng chính">
+        <a href="index.html" data-link="home">Trang chủ</a>
+        <a href="products.html?category=nam" data-link="men">Giày nam</a>
+        <a href="products.html?category=nu" data-link="women">Giày nữ</a>
+        <a href="products.html?category=tre-em" data-link="kids">Giày trẻ em</a>
+        <a href="brands.html" data-link="brands">Thương hiệu</a>
+        <a href="collections.html" data-link="collections">Bộ sưu tập</a>
+        <a href="sale.html" data-link="sale">Khuyến mãi</a>
+        <a href="news.html" data-link="news">Tin tức</a>
+        <a href="contact.html" data-link="contact">Liên hệ</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a href="index.html" data-link="home">Trang chủ</a><i data-icon="chevronRight"></i>
+      <a href="profile.html" data-link="profile">Tài khoản</a><i data-icon="chevronRight"></i>
+      <span aria-current="page">Bảo mật tài khoản</span>
+    </nav>
+
+    <div class="layout">
+      <aside class="side card" aria-label="Tài khoản của tôi">
+        <h2 class="side__title">Tài khoản của tôi</h2>
+        <ul class="side__list">
+          <li><a href="profile.html" data-link="profile"><i data-icon="user"></i>Thông tin cá nhân</a></li>
+          <li><a href="orders.html" data-link="orders"><i data-icon="file"></i>Đơn hàng của tôi</a></li>
+          <li><a href="wishlist.html" data-link="wishlist"><i data-icon="heart"></i>Sản phẩm yêu thích</a></li>
+          <li><a href="addresses.html" data-link="addresses"><i data-icon="pin"></i>Địa chỉ nhận hàng</a></li>
+          <li><a href="coupons.html" data-link="coupons"><i data-icon="ticket"></i>Mã giảm giá</a></li>
+          <li><a href="notifications.html" data-link="notifications"><i data-icon="bell"></i>Thông báo</a></li>
+          <li><a href="account-security.html" aria-current="page"><i data-icon="shield"></i>Bảo mật tài khoản</a></li>
+          <li><a href="settings.html" data-link="settings"><i data-icon="gear"></i>Cài đặt</a></li>
+          <li class="side__sep"><button type="button" data-logout><i data-icon="logout"></i>Đăng xuất</button></li>
+        </ul>
+      </aside>
+
+      <main class="panel card" id="main">
+        <noscript><p class="notice notice--error">Trang này cần bật JavaScript. Vui lòng bật JavaScript rồi tải lại trang.</p></noscript>
+        <div class="pagehead">
+          <svg class="pagehead__logo" viewBox="0 0 48 52" aria-hidden="true"><path d="M24 2 4 9v15c0 12 8.5 21 20 26 11.5-5 20-14 20-26V9z" fill="#E11D2A"/><path d="m15 26 7 7 12-14" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div>
+            <h1 class="pagehead__title">Bảo mật tài khoản</h1>
+            <p class="muted">Quản lý mật khẩu, phương thức đăng nhập và thiết lập bảo mật cho tài khoản của bạn.</p>
+          </div>
+        </div>
+
+        <div class="notice notice--error" data-page-alert role="alert" hidden>
+          <i data-icon="alert"></i>
+          <div class="notice__body">
+            <p data-page-alert-text></p>
+            <div class="notice__actions">
+              <a class="btn btn--small" data-page-alert-login href="../fe-auth/login.html" hidden>Đăng nhập lại</a>
+              <button class="btn btn--small btn--ghost" type="button" data-page-alert-retry hidden>Thử lại</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 1. Đổi mật khẩu -->
+        <section class="box" id="password" aria-labelledby="h-password">
+          <span class="tile"><i data-icon="lock"></i></span>
+          <div class="box__main">
+            <h2 class="box__title" id="h-password">Đổi mật khẩu</h2>
+            <p class="muted">Cập nhật mật khẩu thường xuyên để tăng cường bảo mật.</p>
+            <div class="notice" data-notice="password" hidden></div>
+            <div class="notice notice--info" data-google-only hidden>
+              <i data-icon="info"></i>
+              <p>Tài khoản của bạn đăng nhập bằng Google và chưa có mật khẩu. Hãy dùng mục <a class="link" href="#recovery">Khôi phục mật khẩu</a> để đặt mật khẩu.</p>
+            </div>
+            <form class="pwform" data-form="password" novalidate>
+              <div class="fields">
+                <div class="field">
+                  <label class="field__label" for="currentPassword">Mật khẩu hiện tại <b class="req" aria-hidden="true">*</b></label>
+                  <div class="control"><i data-icon="lock"></i><input class="input" id="currentPassword" name="currentPassword" type="password" placeholder="Nhập mật khẩu hiện tại" autocomplete="current-password" aria-describedby="currentPassword-error" required><button class="pw__toggle" type="button" data-toggle-pw="currentPassword"></button></div>
+                  <p class="field__error" id="currentPassword-error" hidden></p>
+                </div>
+                <div class="field">
+                  <label class="field__label" for="newPassword">Mật khẩu mới <b class="req" aria-hidden="true">*</b></label>
+                  <div class="control"><i data-icon="lock"></i><input class="input" id="newPassword" name="newPassword" type="password" placeholder="Nhập mật khẩu mới" autocomplete="new-password" maxlength="72" aria-describedby="newPassword-error newPassword-help" required><button class="pw__toggle" type="button" data-toggle-pw="newPassword"></button></div>
+                  <p class="field__error" id="newPassword-error" hidden></p>
+                </div>
+                <div class="field">
+                  <label class="field__label" for="confirmPassword">Xác nhận mật khẩu mới <b class="req" aria-hidden="true">*</b></label>
+                  <div class="control"><i data-icon="lock"></i><input class="input" id="confirmPassword" name="confirmPassword" type="password" placeholder="Nhập lại mật khẩu mới" autocomplete="new-password" maxlength="72" aria-describedby="confirmPassword-error" required><button class="pw__toggle" type="button" data-toggle-pw="confirmPassword"></button></div>
+                  <p class="field__error" id="confirmPassword-error" hidden></p>
+                </div>
+              </div>
+              <div class="pwbar">
+                <div class="pwbar__reqs"><i data-icon="info"></i><span>Yêu cầu mật khẩu:</span><div data-strength-slot data-strength-for="newPassword" id="newPassword-help"></div></div>
+                <div class="actions">
+                  <button class="btn btn--ghost" type="button" data-cancel="password">Hủy</button>
+                  <button class="btn" type="submit" data-loading="Đang cập nhật…"><span class="spinner" hidden aria-hidden="true"></span><span data-label>Cập nhật mật khẩu</span></button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <!-- 2. Phương thức đăng nhập -->
+        <section class="box" id="methods" aria-labelledby="h-methods">
+          <span class="tile"><i data-icon="users"></i></span>
+          <div class="box__main">
+            <h2 class="box__title" id="h-methods">Phương thức đăng nhập</h2>
+            <p class="muted">Quản lý các phương thức bạn sử dụng để đăng nhập vào tài khoản.</p>
+            <div class="methods-grid">
+              <ul class="list" data-methods aria-busy="true"><li class="placeholder">Đang tải…</li></ul>
+              <p class="infobox"><i data-icon="info"></i><span data-methods-note>Đang tải…</span></p>
+            </div>
+          </div>
+        </section>
+
+        <div class="duo">
+          <!-- 3. Khôi phục mật khẩu -->
+          <section class="box" id="recovery" aria-labelledby="h-recovery">
+            <span class="tile"><i data-icon="key"></i></span>
+            <div class="box__main" data-recovery data-step="request">
+              <h2 class="box__title" id="h-recovery">Khôi phục mật khẩu</h2>
+              <div class="notice" data-notice="recovery" hidden></div>
+              <div class="step" data-step-panel="request">
+                <p class="muted">Quên mật khẩu? Sử dụng email đã đăng ký để nhận mã xác nhận (OTP) và đặt lại mật khẩu.</p>
+                <p class="muted">Email đã đăng ký: <b class="strong" data-recovery-email>Đang tải…</b></p>
+                <div><button class="btn btn--ghost btn--small" type="button" data-recovery-send data-loading="Đang gửi mã…" disabled><span class="spinner" hidden aria-hidden="true"></span><span data-label>Đặt lại mật khẩu</span></button></div>
+              </div>
+              <form class="step" data-step-panel="otp" data-form="otp" novalidate hidden>
+                <p class="muted" tabindex="-1" data-step-heading>Nhập mã OTP gồm 6 số đã gửi tới <b class="strong" data-recovery-email-echo></b>. Kiểm tra cả thư mục spam.</p>
+                <div class="field">
+                  <label class="field__label" for="otp">Mã OTP</label>
+                  <input class="input input--otp" id="otp" name="otp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" spellcheck="false" aria-describedby="otp-error" required>
+                  <p class="field__error" id="otp-error" hidden></p>
+                </div>
+                <div class="actions actions--start">
+                  <button class="btn btn--small" type="submit" data-loading="Đang xác minh…"><span class="spinner" hidden aria-hidden="true"></span><span data-label>Xác minh mã</span></button>
+                  <button class="btn btn--small btn--ghost" type="button" data-recovery-resend disabled>Gửi lại mã</button>
+                  <button class="btn btn--small btn--text" type="button" data-cancel="recovery">Hủy</button>
+                </div>
+              </form>
+              <form class="step" data-step-panel="reset" data-form="reset" novalidate hidden>
+                <p class="muted" tabindex="-1" data-step-heading>Mã OTP đã được xác minh. Hãy tạo mật khẩu mới cho tài khoản.</p>
+                <div class="field">
+                  <label class="field__label" for="resetPassword">Mật khẩu mới</label>
+                  <div class="control"><i data-icon="lock"></i><input class="input" id="resetPassword" name="newPassword" type="password" autocomplete="new-password" maxlength="72" aria-describedby="resetPassword-error resetPassword-help" required><button class="pw__toggle" type="button" data-toggle-pw="resetPassword"></button></div>
+                  <div class="reqs-wrap" data-strength-slot data-strength-for="resetPassword" id="resetPassword-help"></div>
+                  <p class="field__error" id="resetPassword-error" hidden></p>
+                </div>
+                <div class="field">
+                  <label class="field__label" for="resetConfirm">Nhập lại mật khẩu mới</label>
+                  <div class="control"><i data-icon="lock"></i><input class="input" id="resetConfirm" name="confirmPassword" type="password" autocomplete="new-password" maxlength="72" aria-describedby="resetConfirm-error" required><button class="pw__toggle" type="button" data-toggle-pw="resetConfirm"></button></div>
+                  <p class="field__error" id="resetConfirm-error" hidden></p>
+                </div>
+                <div class="actions actions--start">
+                  <button class="btn btn--small" type="submit" data-loading="Đang lưu…"><span class="spinner" hidden aria-hidden="true"></span><span data-label>Lưu mật khẩu mới</span></button>
+                  <button class="btn btn--small btn--text" type="button" data-cancel="recovery">Hủy</button>
+                </div>
+              </form>
+              <div class="step status" data-step-panel="done" hidden>
+                <p class="status__title" tabindex="-1" data-step-heading><i data-icon="check"></i>Đã đặt lại mật khẩu</p>
+                <p class="muted">Lần đăng nhập tiếp theo, hãy dùng mật khẩu mới.</p>
+                <div><button class="btn btn--small btn--ghost" type="button" data-cancel="recovery">Đóng</button></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 4. Phiên đăng nhập -->
+          <section class="box" id="sessions" aria-labelledby="h-sessions">
+            <span class="tile"><i data-icon="monitor"></i></span>
+            <div class="box__main">
+              <h2 class="box__title" id="h-sessions">Phiên đăng nhập</h2>
+              <p class="muted">Quản lý các phiên đăng nhập trên thiết bị của bạn.</p>
+              <div class="notice" data-notice="sessions" hidden></div>
+              <ul class="list" data-sessions aria-busy="true"><li class="placeholder">Đang tải…</li></ul>
+              <button class="reload" type="button" data-sessions-reload>Tải lại danh sách</button>
+            </div>
+          </section>
+        </div>
+
+        <!-- 5. Lưu ý bảo mật -->
+        <section class="tips" id="tips" aria-labelledby="h-tips">
+          <h2 class="tips__title" id="h-tips"><i data-icon="shield"></i>Lưu ý bảo mật</h2>
+          <ul class="tips__list">
+            <li>Không chia sẻ mật khẩu, mã OTP cho bất kỳ ai.</li>
+            <li>Sử dụng mật khẩu mạnh (ít nhất 8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt).</li>
+            <li>Cẩn thận với các email, đường link lạ mạo danh Sneaker House.</li>
+          </ul>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script src="js/account-config.js"></script>
+  <script src="js/account-security.js"></script>
+</body>
+</html>
