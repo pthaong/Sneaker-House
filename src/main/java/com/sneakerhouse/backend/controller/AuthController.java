@@ -1,3 +1,4 @@
+
 package com.sneakerhouse.backend.controller;
 
 import com.sneakerhouse.backend.dto.AuthDtos.*;
@@ -42,28 +43,20 @@ public class AuthController {
         this.contextRepository = contextRepository;
     }
 
-    // =====================================================
     // 1. CSRF TOKEN
-    // =====================================================
-
     @GetMapping("/csrf")
     public Map<String, String> csrf(CsrfToken token) {
-
         return Map.of(
                 "headerName", token.getHeaderName(),
                 "token", token.getToken()
         );
     }
 
-    // =====================================================
     // 2. REGISTER
-    // =====================================================
-
     @PostMapping("/register")
     public ResponseEntity<UserResponse> register(
             @Valid @RequestBody RegisterRequest request
     ) {
-
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(
@@ -73,33 +66,25 @@ public class AuthController {
                 );
     }
 
-    // =====================================================
     // 3. LOGIN
-    // =====================================================
-
     @PostMapping("/login")
     public UserResponse login(
             @Valid @RequestBody LoginRequest request,
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse
     ) {
-
         Authentication authentication;
 
         try {
-
             authentication = authenticationManager.authenticate(
-                    UsernamePasswordAuthenticationToken
-                            .unauthenticated(
-                                    request.email().trim().toLowerCase(),
-                                    request.password()
-                            )
+                    UsernamePasswordAuthenticationToken.unauthenticated(
+                            request.email().trim().toLowerCase(),
+                            request.password()
+                    )
             );
-
         } catch (
                 org.springframework.security.core.AuthenticationException e
         ) {
-
             throw new AuthException(
                     401,
                     "INVALID_CREDENTIALS",
@@ -107,7 +92,7 @@ public class AuthController {
             );
         }
 
-                // Chống Session Fixation sau khi đăng nhập thành công
+        // Chống Session Fixation
         HttpSession session = httpRequest.getSession(true);
         httpRequest.changeSessionId();
 
@@ -115,7 +100,6 @@ public class AuthController {
                 SecurityContextHolder.createEmptyContext();
 
         context.setAuthentication(authentication);
-
         SecurityContextHolder.setContext(context);
 
         contextRepository.saveContext(
@@ -125,26 +109,18 @@ public class AuthController {
         );
 
         return service.response(
-                service.findByEmail(
-                        authentication.getName()
-                )
+                service.findByEmail(authentication.getName())
         );
     }
 
-    // =====================================================
     // 4. GOOGLE LOGIN
-    // =====================================================
-
     @PostMapping("/google")
     public UserResponse google(
             @Valid @RequestBody GoogleRequest request,
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse
     ) {
-
-        var user = service.googleLogin(
-                request.idToken()
-        );
+        var user = service.googleLogin(request.idToken());
 
         var authentication =
                 UsernamePasswordAuthenticationToken.authenticated(
@@ -158,7 +134,7 @@ public class AuthController {
                         )
                 );
 
-                // Chống Session Fixation sau khi đăng nhập Google thành công
+        // Chống Session Fixation
         HttpSession session = httpRequest.getSession(true);
         httpRequest.changeSessionId();
 
@@ -166,7 +142,6 @@ public class AuthController {
                 SecurityContextHolder.createEmptyContext();
 
         context.setAuthentication(authentication);
-
         SecurityContextHolder.setContext(context);
 
         contextRepository.saveContext(
@@ -178,64 +153,43 @@ public class AuthController {
         return service.response(user);
     }
 
-    // =====================================================
-    // 5. FORGOT PASSWORD - SEND OTP
-    // =====================================================
-
+    // 5. FORGOT PASSWORD
     @PostMapping("/forgot-password")
     public MessageResponse forgot(
             @Valid @RequestBody ForgotPasswordRequest request
     ) {
-
-        service.requestPasswordReset(
-                request.email()
-        );
+        service.requestPasswordReset(request.email());
 
         return new MessageResponse(
                 "Nếu email đã đăng ký, mã OTP sẽ được gửi đến email của bạn."
         );
     }
 
-    // =====================================================
     // 6. VERIFY OTP
-    // =====================================================
-
     @PostMapping("/verify-otp")
     public VerifyOtpResponse verifyOtp(
             @Valid @RequestBody VerifyOtpRequest request
     ) {
-
         return service.verifyOtp(request);
     }
 
-    // =====================================================
     // 7. RESEND OTP
-    // =====================================================
-
     @PostMapping("/resend-otp")
     public MessageResponse resendOtp(
             @Valid @RequestBody ResendOtpRequest request
     ) {
-
-        // Gọi trực tiếp phương thức có @Transactional.
-        service.requestPasswordReset(
-                request.email()
-        );
+        service.requestPasswordReset(request.email());
 
         return new MessageResponse(
                 "Nếu email đã đăng ký và đủ điều kiện, mã OTP mới sẽ được gửi."
         );
     }
 
-    // =====================================================
     // 8. RESET PASSWORD
-    // =====================================================
-
     @PostMapping("/reset-password")
     public MessageResponse reset(
             @Valid @RequestBody ResetPasswordRequest request
     ) {
-
         service.resetPassword(request);
 
         return new MessageResponse(
@@ -243,19 +197,14 @@ public class AuthController {
         );
     }
 
-    // =====================================================
     // 9. LOGOUT
-    // =====================================================
-
     @PostMapping("/logout")
     public MessageResponse logout(
             HttpServletRequest request
     ) {
-
         SecurityContextHolder.clearContext();
 
-        HttpSession session =
-                request.getSession(false);
+        HttpSession session = request.getSession(false);
 
         if (session != null) {
             session.invalidate();
@@ -266,31 +215,21 @@ public class AuthController {
         );
     }
 
-    // =====================================================
     // 10. CURRENT USER
-    // =====================================================
-
     @GetMapping("/me")
     public UserResponse me(
             Authentication authentication
     ) {
-
         return service.response(
-                service.findByEmail(
-                        authentication.getName()
-                )
+                service.findByEmail(authentication.getName())
         );
     }
 
-    // =====================================================
     // 11. AUTH ERROR HANDLER
-    // =====================================================
-
     @ExceptionHandler(AuthException.class)
     public ResponseEntity<ErrorResponse> authError(
             AuthException e
     ) {
-
         return ResponseEntity
                 .status(e.getStatus())
                 .body(
@@ -301,15 +240,11 @@ public class AuthController {
                 );
     }
 
-    // =====================================================
     // 12. VALIDATION ERROR HANDLER
-    // =====================================================
-
     @ExceptionHandler(
             org.springframework.web.bind.MethodArgumentNotValidException.class
     )
     public ResponseEntity<ErrorResponse> validationError() {
-
         return ResponseEntity
                 .badRequest()
                 .body(

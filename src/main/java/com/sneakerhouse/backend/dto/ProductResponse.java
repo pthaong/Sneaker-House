@@ -1,0 +1,5 @@
+package com.sneakerhouse.backend.dto;
+import com.sneakerhouse.backend.entity.Product; import java.math.BigDecimal; import java.time.LocalDateTime;
+public record ProductResponse(Long id,String name,String sku,String imageUrl,String brand,String category,BigDecimal originalPrice,BigDecimal salePrice,Integer discountPercent,Integer stockQuantity,String sizes,String colors,Integer soldCount,LocalDateTime flashSaleEnd,LocalDateTime createdAt) {
+ public static ProductResponse from(Product p){ BigDecimal price=p.salePrice!=null&&p.salePrice.compareTo(p.originalPrice)<0?p.salePrice:p.originalPrice; int discount=p.originalPrice.signum()>0?p.originalPrice.subtract(price).multiply(BigDecimal.valueOf(100)).divide(p.originalPrice,0,java.math.RoundingMode.HALF_UP).intValue():0; return new ProductResponse(p.id,p.name,p.sku,p.imageUrl,p.brand==null?null:p.brand.name,p.category==null?null:p.category.name,p.originalPrice,p.salePrice,discount,p.stockQuantity,p.sizes,p.colors,p.soldCount,p.flashSaleEnd,p.createdAt); }
+}

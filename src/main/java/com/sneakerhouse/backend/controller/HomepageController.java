@@ -1,0 +1,20 @@
+package com.sneakerhouse.backend.controller;
+import com.sneakerhouse.backend.repository.*; import com.sneakerhouse.backend.entity.*; import com.sneakerhouse.backend.dto.ProductResponse; import org.springframework.web.bind.annotation.*; import org.springframework.transaction.annotation.Transactional; import java.time.LocalDateTime; import java.util.*;
+@RestController @RequestMapping("/api") @Transactional(readOnly=true) public class HomepageController {
+ private final HomeBannerRepository banners; private final CategoryRepository categories; private final BrandRepository brands; private final ProductRepository products; private final HomeCollectionRepository collections; private final HomeNewsRepository news;
+ public HomepageController(HomeBannerRepository b,CategoryRepository c,BrandRepository br,ProductRepository p,HomeCollectionRepository co,HomeNewsRepository n){banners=b;categories=c;brands=br;products=p;collections=co;news=n;}
+ @GetMapping("/homepage") public Map<String,Object> homepage(){ Map<String,Object> m=new LinkedHashMap<>(); m.put("mainBanners",banners.findByActiveTrueAndBannerTypeOrderByPositionAsc("MAIN")); m.put("advertisingBanners",banners.findByActiveTrueAndBannerTypeOrderByPositionAsc("AD")); m.put("categories",categories.findByActiveTrueOrderByNameAsc()); m.put("brands",brands.findByActiveTrueOrderByNameAsc()); m.put("featuredProducts",map(products.findTop8ByActiveTrueAndFeaturedTrueOrderByCreatedAtDesc())); m.put("newArrivals",map(products.findTop8ByActiveTrueOrderByCreatedAtDesc())); m.put("bestSellers",map(products.findTop8ByActiveTrueOrderBySoldCountDesc())); m.put("flashSales",map(products.findByActiveTrueAndFlashSaleEndAfterOrderByFlashSaleEndAsc(LocalDateTime.now()))); m.put("collections",collections.findByActiveTrueOrderByIdDesc()); m.put("news",news.findTop8ByActiveTrueOrderByPublishedAtDesc()); return m; }
+ @PostMapping("/banners") public HomeBanner createBanner(@RequestBody HomeBanner banner){banner.id=null;return banners.save(banner);}
+ @PutMapping("/banners/{id}") public HomeBanner updateBanner(@PathVariable Long id,@RequestBody HomeBanner input){HomeBanner b=banners.findById(id).orElseThrow(()->new NoSuchElementException("Không tìm thấy banner"));b.title=input.title;b.imageUrl=input.imageUrl;b.targetUrl=input.targetUrl;b.bannerType=input.bannerType;b.position=input.position;b.active=input.active;return banners.save(b);}
+ @DeleteMapping("/banners/{id}") public void deleteBanner(@PathVariable Long id){if(!banners.existsById(id))throw new NoSuchElementException("Không tìm thấy banner");banners.deleteById(id);}
+ @GetMapping("/banners") public List<HomeBanner> banners(@RequestParam(defaultValue="ALL") String type){return type.equalsIgnoreCase("ALL")?banners.findByActiveTrueOrderByPositionAsc():banners.findByActiveTrueAndBannerTypeOrderByPositionAsc(type.toUpperCase());}
+ @GetMapping("/categories") public List<Category> categories(){return categories.findByActiveTrueOrderByNameAsc();}
+ @GetMapping("/brands") public List<Brand> brands(){return brands.findByActiveTrueOrderByNameAsc();}
+ @GetMapping("/products/featured") public List<ProductResponse> featured(){return map(products.findTop8ByActiveTrueAndFeaturedTrueOrderByCreatedAtDesc());}
+ @GetMapping("/products/new-arrivals") public List<ProductResponse> newest(){return map(products.findTop8ByActiveTrueOrderByCreatedAtDesc());}
+ @GetMapping("/products/best-sellers") public List<ProductResponse> best(){return map(products.findTop8ByActiveTrueOrderBySoldCountDesc());}
+ @GetMapping("/flash-sales") public List<ProductResponse> flash(){return map(products.findByActiveTrueAndFlashSaleEndAfterOrderByFlashSaleEndAsc(LocalDateTime.now()));}
+ @GetMapping("/collections") public List<HomeCollection> collections(){return collections.findByActiveTrueOrderByIdDesc();}
+ @GetMapping("/news") public List<HomeNews> news(){return news.findTop8ByActiveTrueOrderByPublishedAtDesc();}
+ private List<ProductResponse> map(List<Product> list){return list.stream().map(ProductResponse::from).toList();}
+}
