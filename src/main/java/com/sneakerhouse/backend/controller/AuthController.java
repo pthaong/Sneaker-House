@@ -1,9 +1,10 @@
+
 package com.sneakerhouse.backend.controller;
 
 import com.sneakerhouse.backend.dto.AuthDtos.*;
 import com.sneakerhouse.backend.service.AuthException;
 import com.sneakerhouse.backend.service.AuthService;
-
+import com.sneakerhouse.backend.service.AccountSessionRegistry;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -29,41 +30,36 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthService service;
-    private final AuthenticationManager authenticationManager;
-    private final SecurityContextRepository contextRepository;
+private final AuthenticationManager authenticationManager;
+private final SecurityContextRepository contextRepository;
+private final AccountSessionRegistry sessionRegistry;
 
     public AuthController(
-            AuthService service,
-            AuthenticationManager authenticationManager,
-            SecurityContextRepository contextRepository
-    ) {
-        this.service = service;
-        this.authenticationManager = authenticationManager;
-        this.contextRepository = contextRepository;
-    }
+        AuthService service,
+        AuthenticationManager authenticationManager,
+        SecurityContextRepository contextRepository,
+        AccountSessionRegistry sessionRegistry
+) {
+    this.service = service;
+    this.authenticationManager = authenticationManager;
+    this.contextRepository = contextRepository;
+    this.sessionRegistry = sessionRegistry;
+}
 
-    // =====================================================
     // 1. CSRF TOKEN
-    // =====================================================
-
     @GetMapping("/csrf")
     public Map<String, String> csrf(CsrfToken token) {
-
         return Map.of(
                 "headerName", token.getHeaderName(),
                 "token", token.getToken()
         );
     }
 
-    // =====================================================
     // 2. REGISTER
-    // =====================================================
-
     @PostMapping("/register")
     public ResponseEntity<UserResponse> register(
             @Valid @RequestBody RegisterRequest request
     ) {
-
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(
@@ -73,33 +69,25 @@ public class AuthController {
                 );
     }
 
-    // =====================================================
     // 3. LOGIN
-    // =====================================================
-
     @PostMapping("/login")
     public UserResponse login(
             @Valid @RequestBody LoginRequest request,
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse
     ) {
-
         Authentication authentication;
 
         try {
-
             authentication = authenticationManager.authenticate(
-                    UsernamePasswordAuthenticationToken
-                            .unauthenticated(
-                                    request.email().trim().toLowerCase(),
-                                    request.password()
-                            )
+                    UsernamePasswordAuthenticationToken.unauthenticated(
+                            request.email().trim().toLowerCase(),
+                            request.password()
+                    )
             );
-
         } catch (
                 org.springframework.security.core.AuthenticationException e
         ) {
-
             throw new AuthException(
                     401,
                     "INVALID_CREDENTIALS",
@@ -107,7 +95,7 @@ public class AuthController {
             );
         }
 
-                // Chống Session Fixation sau khi đăng nhập thành công
+        // Chống Session Fixation
         HttpSession session = httpRequest.getSession(true);
         httpRequest.changeSessionId();
 
@@ -115,36 +103,34 @@ public class AuthController {
                 SecurityContextHolder.createEmptyContext();
 
         context.setAuthentication(authentication);
-
         SecurityContextHolder.setContext(context);
 
         contextRepository.saveContext(
-                context,
-                httpRequest,
-                httpResponse
-        );
+        context,
+        httpRequest,
+        httpResponse
+);
 
-        return service.response(
-                service.findByEmail(
-                        authentication.getName()
-                )
-        );
+// Ghi nhan phien dang nhap Email/Password
+sessionRegistry.register(
+        session,
+        authentication.getName(),
+        httpRequest.getHeader("User-Agent")
+);
+
+return service.response(
+        service.findByEmail(authentication.getName())
+);
     }
 
-    // =====================================================
     // 4. GOOGLE LOGIN
-    // =====================================================
-
     @PostMapping("/google")
     public UserResponse google(
             @Valid @RequestBody GoogleRequest request,
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse
     ) {
-
-        var user = service.googleLogin(
-                request.idToken()
-        );
+        var user = service.googleLogin(request.idToken());
 
         var authentication =
                 UsernamePasswordAuthenticationToken.authenticated(
@@ -158,7 +144,7 @@ public class AuthController {
                         )
                 );
 
-                // Chống Session Fixation sau khi đăng nhập Google thành công
+        // Chống Session Fixation
         HttpSession session = httpRequest.getSession(true);
         httpRequest.changeSessionId();
 
@@ -166,76 +152,61 @@ public class AuthController {
                 SecurityContextHolder.createEmptyContext();
 
         context.setAuthentication(authentication);
-
         SecurityContextHolder.setContext(context);
 
         contextRepository.saveContext(
-                context,
-                httpRequest,
-                httpResponse
-        );
+        context,
+        httpRequest,
+        httpResponse
+);
 
-        return service.response(user);
+// Ghi nhan phien dang nhap Google
+sessionRegistry.register(
+        session,
+        user.getEmail(),
+        httpRequest.getHeader("User-Agent")
+);
+
+return service.response(user);
     }
 
-    // =====================================================
-    // 5. FORGOT PASSWORD - SEND OTP
-    // =====================================================
-
+    // 5. FORGOT PASSWORD
     @PostMapping("/forgot-password")
     public MessageResponse forgot(
             @Valid @RequestBody ForgotPasswordRequest request
     ) {
-
-        service.requestPasswordReset(
-                request.email()
-        );
+        service.requestPasswordReset(request.email());
 
         return new MessageResponse(
                 "Nếu email đã đăng ký, mã OTP sẽ được gửi đến email của bạn."
         );
     }
 
-    // =====================================================
     // 6. VERIFY OTP
-    // =====================================================
-
     @PostMapping("/verify-otp")
     public VerifyOtpResponse verifyOtp(
             @Valid @RequestBody VerifyOtpRequest request
     ) {
-
         return service.verifyOtp(request);
     }
 
-    // =====================================================
     // 7. RESEND OTP
-    // =====================================================
-
     @PostMapping("/resend-otp")
     public MessageResponse resendOtp(
             @Valid @RequestBody ResendOtpRequest request
     ) {
-
-        // Gọi trực tiếp phương thức có @Transactional.
-        service.requestPasswordReset(
-                request.email()
-        );
+        service.requestPasswordReset(request.email());
 
         return new MessageResponse(
                 "Nếu email đã đăng ký và đủ điều kiện, mã OTP mới sẽ được gửi."
         );
     }
 
-    // =====================================================
     // 8. RESET PASSWORD
-    // =====================================================
-
     @PostMapping("/reset-password")
     public MessageResponse reset(
             @Valid @RequestBody ResetPasswordRequest request
     ) {
-
         service.resetPassword(request);
 
         return new MessageResponse(
@@ -243,19 +214,14 @@ public class AuthController {
         );
     }
 
-    // =====================================================
     // 9. LOGOUT
-    // =====================================================
-
     @PostMapping("/logout")
     public MessageResponse logout(
             HttpServletRequest request
     ) {
-
         SecurityContextHolder.clearContext();
 
-        HttpSession session =
-                request.getSession(false);
+        HttpSession session = request.getSession(false);
 
         if (session != null) {
             session.invalidate();
@@ -266,31 +232,21 @@ public class AuthController {
         );
     }
 
-    // =====================================================
     // 10. CURRENT USER
-    // =====================================================
-
     @GetMapping("/me")
     public UserResponse me(
             Authentication authentication
     ) {
-
         return service.response(
-                service.findByEmail(
-                        authentication.getName()
-                )
+                service.findByEmail(authentication.getName())
         );
     }
 
-    // =====================================================
     // 11. AUTH ERROR HANDLER
-    // =====================================================
-
     @ExceptionHandler(AuthException.class)
     public ResponseEntity<ErrorResponse> authError(
             AuthException e
     ) {
-
         return ResponseEntity
                 .status(e.getStatus())
                 .body(
@@ -301,15 +257,11 @@ public class AuthController {
                 );
     }
 
-    // =====================================================
     // 12. VALIDATION ERROR HANDLER
-    // =====================================================
-
     @ExceptionHandler(
             org.springframework.web.bind.MethodArgumentNotValidException.class
     )
     public ResponseEntity<ErrorResponse> validationError() {
-
         return ResponseEntity
                 .badRequest()
                 .body(
