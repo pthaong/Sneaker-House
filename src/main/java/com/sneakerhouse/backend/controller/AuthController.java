@@ -4,7 +4,7 @@ package com.sneakerhouse.backend.controller;
 import com.sneakerhouse.backend.dto.AuthDtos.*;
 import com.sneakerhouse.backend.service.AuthException;
 import com.sneakerhouse.backend.service.AuthService;
-
+import com.sneakerhouse.backend.service.AccountSessionRegistry;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -30,18 +30,21 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthService service;
-    private final AuthenticationManager authenticationManager;
-    private final SecurityContextRepository contextRepository;
+private final AuthenticationManager authenticationManager;
+private final SecurityContextRepository contextRepository;
+private final AccountSessionRegistry sessionRegistry;
 
     public AuthController(
-            AuthService service,
-            AuthenticationManager authenticationManager,
-            SecurityContextRepository contextRepository
-    ) {
-        this.service = service;
-        this.authenticationManager = authenticationManager;
-        this.contextRepository = contextRepository;
-    }
+        AuthService service,
+        AuthenticationManager authenticationManager,
+        SecurityContextRepository contextRepository,
+        AccountSessionRegistry sessionRegistry
+) {
+    this.service = service;
+    this.authenticationManager = authenticationManager;
+    this.contextRepository = contextRepository;
+    this.sessionRegistry = sessionRegistry;
+}
 
     // 1. CSRF TOKEN
     @GetMapping("/csrf")
@@ -103,14 +106,21 @@ public class AuthController {
         SecurityContextHolder.setContext(context);
 
         contextRepository.saveContext(
-                context,
-                httpRequest,
-                httpResponse
-        );
+        context,
+        httpRequest,
+        httpResponse
+);
 
-        return service.response(
-                service.findByEmail(authentication.getName())
-        );
+// Ghi nhan phien dang nhap Email/Password
+sessionRegistry.register(
+        session,
+        authentication.getName(),
+        httpRequest.getHeader("User-Agent")
+);
+
+return service.response(
+        service.findByEmail(authentication.getName())
+);
     }
 
     // 4. GOOGLE LOGIN
@@ -145,12 +155,19 @@ public class AuthController {
         SecurityContextHolder.setContext(context);
 
         contextRepository.saveContext(
-                context,
-                httpRequest,
-                httpResponse
-        );
+        context,
+        httpRequest,
+        httpResponse
+);
 
-        return service.response(user);
+// Ghi nhan phien dang nhap Google
+sessionRegistry.register(
+        session,
+        user.getEmail(),
+        httpRequest.getHeader("User-Agent")
+);
+
+return service.response(user);
     }
 
     // 5. FORGOT PASSWORD
