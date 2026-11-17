@@ -400,9 +400,13 @@
 
     const btn = $('button[type="submit"]', pwForm);
     setLoading(btn, true);
-    const r = await api('changePassword', {
+        const r = await api('changePassword', {
       method: CONFIG.changePasswordMethod,
-      body: { currentPassword: f.currentPassword.value, newPassword: f.newPassword.value },
+      body: {
+        currentPassword: f.currentPassword.value,
+        newPassword: f.newPassword.value,
+        confirmPassword: f.confirmPassword.value,
+      },
     });
     setLoading(btn, false);
 
@@ -684,7 +688,7 @@
     btn.disabled = true;
     btn.textContent = 'Đang đăng xuất…';
     const r = await api('revokeSession', { method: 'DELETE', params: { id: btn.dataset.revoke } });
-    if (r.ok || r.status === 404) { // 404: phiên đã không còn
+    if (r.ok) { // 404: phiên đã không còn
       setNotice('sessions', 'success', 'Đã đăng xuất thiết bị đó khỏi tài khoản.');
       return loadSessions({ quiet: true });
     }

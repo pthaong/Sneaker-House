@@ -26,18 +26,13 @@ window.ACCOUNT_CONFIG = {
     verifyOtp: '/auth/verify-otp',             // POST { email, otp } → { resetToken }
     resendOtp: '/auth/resend-otp',             // POST { email }
     resetPassword: '/auth/reset-password',     // POST { token, newPassword }
-
-    // BE1 chưa bàn giao (issue #11) — đây là ĐỀ XUẤT contract, sửa khi BE1 chốt:
     changePassword: '/account/password',       // POST { currentPassword, newPassword }
     sessions: '/account/sessions',             // GET → [{ id, device, browser, os, createdAt, current }]
     revokeSession: '/account/sessions/{id}',   // DELETE
   },
-  changePasswordMethod: 'POST',                // BE1 có thể chọn PUT/PATCH
-
-  /* Dữ liệu giả cho phần BE1 chưa làm xong. CHỈ chạy ở localhost / 127.0.0.1.
-     Đặt cả hai thành false khi BE1 bàn giao API, TRƯỚC khi tạo PR và khi kiểm thử cuối. */
+  changePasswordMethod: 'PUT',
   mock: {
-    changePassword: true,
-    sessions: true,
-  },
+  changePassword: false,
+  sessions: false,
+},
 };
