@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sneaker House — Giày sneaker chính hãng</title>
+  <meta name="description" content="Sneaker House: giày sneaker nam, nữ, trẻ em chính hãng, giao hàng nhanh, đổi trả trong 7 ngày. Flash Sale mỗi ngày.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="css/home.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Bỏ qua tới nội dung chính</a>
+
+  <div class="promo">
+    <div class="wrap promo__in">
+      <span><i data-icon="truck"></i>Miễn phí giao hàng cho đơn từ 500.000đ</span>
+      <span><i data-icon="refresh"></i>Đổi trả trong 7 ngày</span>
+      <span><i data-icon="shieldCheck"></i>Hàng chính hãng 100%</span>
+      <span><i data-icon="pin"></i>Hệ thống cửa hàng</span>
+      <span><i data-icon="package"></i><a href="orders.html" data-link="orders">Tra cứu đơn hàng</a></span>
+      <span><i data-icon="headset"></i>Hỗ trợ 24/7: <b class="promo__tel" data-hotline>1900 1234</b></span>
+    </div>
+  </div>
+
+  <header class="head" id="top">
+    <div class="wrap head__in">
+      <a class="logo" href="index.html" aria-label="Sneaker House — trang chủ"><img src="assets/logo-dark.png" alt="Sneaker House" width="1000" height="290"></a>
+      <form class="search" role="search" data-search>
+        <label class="sr-only" for="q">Tìm kiếm</label>
+        <input id="q" name="q" type="search" placeholder="Tìm theo tên giày, mã giày, thương hiệu..." autocomplete="off">
+        <button type="submit" aria-label="Tìm kiếm"><i data-icon="search"></i></button>
+      </form>
+      <nav class="tools" aria-label="Tiện ích">
+        <a class="tool" href="wishlist.html" data-link="wishlist"><i data-icon="heart"></i><span>Yêu thích</span></a>
+        <div class="menu" data-menu>
+          <button class="tool" type="button" aria-expanded="false" aria-controls="account-menu" data-menu-btn>
+            <i data-icon="user"></i><span data-user-name>Tài khoản</span><i data-icon="chevronDown" class="chev"></i>
+          </button>
+          <ul class="menu__list" id="account-menu" hidden data-account-list></ul>
+        </div>
+        <a class="tool" href="cart.html" data-link="cart"><i data-icon="cart"></i><span>Giỏ hàng</span></a>
+      </nav>
+    </div>
+
+    <div class="wrap navrow">
+      <button class="cat" type="button" aria-expanded="false" aria-controls="mega" data-mega-btn>
+        <i data-icon="menu"></i><span>Danh mục sản phẩm</span><i data-icon="chevronDown"></i>
+      </button>
+      <nav class="mainnav" aria-label="Điều hướng chính">
+        <a href="index.html" data-link="home" aria-current="page">Trang chủ</a>
+        <a href="index.html?category=nam#shop" data-link="men">Giày nam</a>
+        <a href="index.html?category=nu#shop" data-link="women">Giày nữ</a>
+        <a href="index.html?category=tre-em#shop" data-link="kids">Giày trẻ em</a>
+        <a href="#brands" data-link="brands">Thương hiệu</a>
+        <a href="#collections" data-link="collections">Bộ sưu tập</a>
+        <a href="#flash" data-link="sale">Khuyến mãi</a>
+        <a href="#news" data-link="news">Tin tức</a>
+        <a href="#contact" data-link="contact">Liên hệ</a>
+      </nav>
+    </div>
+
+    <div class="mega" id="mega" hidden data-mega>
+      <button class="mega__close" type="button" aria-label="Đóng danh mục" data-mega-close><i data-icon="x"></i></button>
+      <div class="wrap mega__in">
+        <ul class="mega__main" role="menu" aria-label="Danh mục chính" data-mega-main></ul>
+        <div class="mega__body" data-mega-body></div>
+        <aside class="mega__side">
+          <div data-mega-brands></div>
+          <div data-mega-prices></div>
+          <a class="mega__banner" href="#flash" data-mega-banner>
+            <span class="mega__tag">Flash Sale</span>
+            <strong>Giảm đến 50%</strong>
+            <span>Sneaker chính hãng — số lượng có hạn</span>
+          </a>
+        </aside>
+      </div>
+    </div>
+  </header>
+  <div class="mega-scrim" data-mega-scrim hidden></div>
+
+  <main id="main">
+    <noscript><p class="wrap notice notice--error">Trang này cần bật JavaScript. Vui lòng bật JavaScript rồi tải lại trang.</p></noscript>
+
+    <!-- 3. Banner chính -->
+    <section class="wrap hero" aria-label="Banner nổi bật" data-hero>
+      <div class="hero__stage" data-hero-stage><div class="skel skel--hero"></div></div>
+      <div class="hero__dots" data-hero-dots role="tablist" aria-label="Chọn banner"></div>
+      <button class="hero__nav hero__nav--prev" type="button" aria-label="Banner trước" data-hero-prev><i data-icon="chevronLeft"></i></button>
+      <button class="hero__nav hero__nav--next" type="button" aria-label="Banner sau" data-hero-next><i data-icon="chevronRight"></i></button>
+    </section>
+
+    <section class="wrap sec" aria-labelledby="h-cats">
+      <h2 class="sec__title" id="h-cats">Danh mục nổi bật</h2>
+      <div class="cats" data-slot="categories"></div>
+    </section>
+
+    <section class="wrap sec" id="brands" aria-labelledby="h-brands">
+      <h2 class="sec__title" id="h-brands">Thương hiệu nổi bật</h2>
+      <div class="brands" data-slot="brands"></div>
+    </section>
+
+    <!-- 4. Flash Sale -->
+    <section class="wrap sec sec--flash" id="flash" aria-labelledby="h-flash" data-flash hidden>
+      <div class="sec__head">
+        <h2 class="sec__title" id="h-flash"><i data-icon="flame"></i>Flash Sale</h2>
+        <div class="count" data-count role="timer" aria-live="off">
+          <span class="muted">Kết thúc sau</span>
+          <b data-cd="h">00</b><i>:</i><b data-cd="m">00</b><i>:</i><b data-cd="s">00</b>
+        </div>
+      </div>
+      <div class="grid" data-slot="flash"></div>
+    </section>
+
+    <!-- 5. Các khu sản phẩm -->
+    <section class="wrap sec" id="featured" aria-labelledby="h-featured">
+      <div class="sec__head"><h2 class="sec__title" id="h-featured">Sản phẩm nổi bật</h2><a class="more" href="index.html#shop" data-link="products">Xem tất cả<i data-icon="chevronRight"></i></a></div>
+      <div class="grid" data-slot="featured"></div>
+    </section>
+
+    <section class="wrap sec" id="new" aria-labelledby="h-new">
+      <div class="sec__head"><h2 class="sec__title" id="h-new">Sản phẩm mới về</h2><a class="more" href="index.html?sort=newest#shop">Xem tất cả<i data-icon="chevronRight"></i></a></div>
+      <div class="grid" data-slot="newest"></div>
+    </section>
+
+    <section class="wrap sec" id="best" aria-labelledby="h-best">
+      <div class="sec__head"><h2 class="sec__title" id="h-best">Sản phẩm bán chạy</h2><a class="more" href="index.html?sort=bestseller#shop">Xem tất cả<i data-icon="chevronRight"></i></a></div>
+      <div class="grid" data-slot="bestSellers"></div>
+    </section>
+
+    <section class="wrap sec" aria-label="Khuyến mãi">
+      <div class="promos" data-slot="promos"></div>
+    </section>
+
+    <section class="wrap sec" id="collections" aria-labelledby="h-col">
+      <div class="sec__head"><h2 class="sec__title" id="h-col">Bộ sưu tập giày</h2></div>
+      <div class="cols" data-slot="collections"></div>
+    </section>
+
+    <!-- 6. Tìm kiếm, lọc, sắp xếp -->
+    <section class="wrap sec" id="shop" aria-labelledby="h-shop">
+      <h2 class="sec__title" id="h-shop">Tất cả sản phẩm</h2>
+      <form class="filters card" data-filters aria-label="Bộ lọc sản phẩm">
+        <div class="filters__row">
+          <label class="ff"><span>Từ khóa</span><input class="input" type="search" name="q" placeholder="Tên, mã giày, thương hiệu" autocomplete="off"></label>
+          <label class="ff"><span>Danh mục</span><select class="input" name="category"><option value="">Tất cả</option></select></label>
+          <label class="ff"><span>Thương hiệu</span><select class="input" name="brand"><option value="">Tất cả</option></select></label>
+          <label class="ff"><span>Khoảng giá</span><select class="input" name="price"><option value="">Tất cả</option></select></label>
+          <label class="ff"><span>Sắp xếp</span>
+            <select class="input" name="sort">
+              <option value="">Mặc định</option><option value="newest">Mới nhất</option><option value="bestseller">Bán chạy</option>
+              <option value="price_asc">Giá tăng dần</option><option value="price_desc">Giá giảm dần</option>
+            </select>
+          </label>
+        </div>
+        <div class="filters__row filters__row--chips">
+          <fieldset class="chipset"><legend>Size</legend><div data-sizes></div></fieldset>
+          <fieldset class="chipset"><legend>Màu sắc</legend><div data-colors></div></fieldset>
+          <div class="filters__actions">
+            <button class="btn" type="submit">Áp dụng</button>
+            <button class="btn btn--ghost" type="button" data-reset>Xóa bộ lọc</button>
+          </div>
+        </div>
+      </form>
+      <p class="resultline" data-resultline role="status" aria-live="polite"></p>
+      <div class="grid" data-slot="shop"></div>
+      <div class="loadmore" data-loadmore hidden><button class="btn btn--ghost" type="button">Xem thêm sản phẩm</button></div>
+    </section>
+
+    <!-- 8. Tin tức, đánh giá, đăng ký ưu đãi -->
+    <section class="wrap sec" id="news" aria-labelledby="h-news">
+      <div class="sec__head"><h2 class="sec__title" id="h-news">Tin tức &amp; bài viết nổi bật</h2></div>
+      <div class="newsgrid" data-slot="news"></div>
+    </section>
+
+    <section class="wrap sec" id="reviews" aria-labelledby="h-rev" data-reviews hidden>
+      <h2 class="sec__title" id="h-rev">Khách hàng nói gì về Sneaker House</h2>
+      <div class="revgrid" data-slot="reviews"></div>
+    </section>
+
+    <section class="wrap sec" aria-labelledby="h-news-sub">
+      <div class="subscribe">
+        <div><h2 id="h-news-sub">Nhận ưu đãi sớm nhất</h2><p>Đăng ký email để nhận thông tin sản phẩm mới, mã giảm giá và Flash Sale.</p></div>
+        <form class="subscribe__form" data-subscribe novalidate>
+          <label class="sr-only" for="sub-email">Email của bạn</label>
+          <input class="input" id="sub-email" type="email" name="email" placeholder="Nhập email của bạn" autocomplete="email" required>
+          <button class="btn" type="submit">Đăng ký</button>
+          <p class="subscribe__msg" data-subscribe-msg role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot" id="contact">
+    <div class="wrap foot__in">
+      <div class="foot__brand">
+        <img src="assets/logo-light.png" alt="Sneaker House" width="1000" height="290">
+        <p>Sneaker chính hãng cho mọi phong cách. Giao hàng nhanh, đổi trả dễ dàng.</p>
+      </div>
+      <div><h3>Cửa hàng</h3><ul>
+        <li data-store="address">Hà Nội, Việt Nam</li>
+        <li>Hotline: <a data-store="hotline" href="tel:19001234">1900 1234</a></li>
+        <li>Email: <a data-store="email" href="mailto:cskh@sneakerhouse.vn">cskh@sneakerhouse.vn</a></li></ul></div>
+      <div><h3>Chính sách</h3><ul>
+        <li><a href="#">Chính sách đổi trả</a></li><li><a href="#">Chính sách vận chuyển</a></li>
+        <li><a href="#">Bảo hành &amp; bảo quản</a></li><li><a href="../fe-auth/privacy.html">Chính sách bảo mật</a></li>
+        <li><a href="../fe-auth/terms.html">Điều khoản sử dụng</a></li></ul></div>
+      <div><h3>Hỗ trợ</h3><ul>
+        <li><a href="orders.html" data-link="orders">Tra cứu đơn hàng</a></li><li><a href="#">Hướng dẫn chọn size</a></li>
+        <li><a href="#">Câu hỏi thường gặp</a></li><li><a href="#brands">Thương hiệu</a></li></ul></div>
+    </div>
+    <div class="foot__bar"><div class="wrap">© Sneaker House. Bảo lưu mọi quyền.</div></div>
+  </footer>
+
+  <!-- 7. Chatbox AI (giao diện, chưa kết nối AI) -->
+  <div class="chat" data-chat>
+    <button class="chat__fab" type="button" aria-expanded="false" aria-controls="chat-panel" data-chat-open>
+      <i data-icon="chat"></i><span>Chat với AI</span>
+    </button>
+    <section class="chat__panel" id="chat-panel" role="dialog" aria-label="Trợ lý Sneaker House" hidden>
+      <header class="chat__head">
+        <span class="chat__avatar"><i data-icon="chat"></i></span>
+        <div><strong>Trợ lý Sneaker House</strong><small>Tư vấn chọn giày</small></div>
+        <button type="button" aria-label="Thu nhỏ khung chat" data-chat-min><i data-icon="minus"></i></button>
+        <button type="button" aria-label="Đóng khung chat" data-chat-close><i data-icon="x"></i></button>
+      </header>
+      <div class="chat__body" data-chat-body aria-live="polite"></div>
+      <div class="chat__chips" data-chat-chips></div>
+      <form class="chat__form" data-chat-form>
+        <label class="sr-only" for="chat-input">Tin nhắn</label>
+        <input class="input" id="chat-input" type="text" placeholder="Nhập tin nhắn..." autocomplete="off" maxlength="500">
+        <button class="btn btn--icon" type="submit" aria-label="Gửi"><i data-icon="send"></i></button>
+      </form>
+    </section>
+  </div>
+
+  <div class="toast" data-toast role="status" aria-live="polite" hidden></div>
+  <script src="js/home-config.js"></script>
+  <script src="js/home-mock.js"></script>
+  <script src="js/home.js"></script>
+</body>
+</html>
