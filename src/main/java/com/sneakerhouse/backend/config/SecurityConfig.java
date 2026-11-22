@@ -92,7 +92,21 @@ public class SecurityConfig {
                                 "/api/auth/resend-otp",
                                 "/api/auth/reset-password"
                         ).permitAll()
+                        // Chỉ ADMIN được quản lý Banner
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/banners"
+                        ).hasRole("ADMIN")
 
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/banners/*"
+                        ).hasRole("ADMIN")
+
+                        .requestMatchers(
+                                HttpMethod.DELETE,
+                                "/api/banners/*"
+                        ).hasRole("ADMIN")
                         // Homepage: chỉ công khai phương thức GET
                         .requestMatchers(
                                 HttpMethod.GET,
