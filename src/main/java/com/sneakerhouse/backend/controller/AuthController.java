@@ -258,17 +258,26 @@ return service.response(user);
     }
 
     // 12. VALIDATION ERROR HANDLER
+    
     @ExceptionHandler(
             org.springframework.web.bind.MethodArgumentNotValidException.class
     )
-    public ResponseEntity<ErrorResponse> validationError() {
-        return ResponseEntity
-                .badRequest()
-                .body(
-                        new ErrorResponse(
-                                "VALIDATION_ERROR",
-                                "Dữ liệu đầu vào không hợp lệ."
-                        )
-                );
+    public ResponseEntity<Map<String, Object>> validationError(
+            org.springframework.web.bind.MethodArgumentNotValidException e
+    ) {
+        Map<String, Object> errors = new java.util.LinkedHashMap<>();
+
+        e.getBindingResult().getFieldErrors().forEach(error ->
+                errors.put(error.getField(), error.getDefaultMessage())
+        );
+
+        return ResponseEntity.badRequest().body(
+                Map.of(
+                        "error", "VALIDATION_ERROR",
+                        "message", "Dữ liệu đầu vào không hợp lệ.",
+                        "details", errors
+                               )
+        );
     }
+
 }

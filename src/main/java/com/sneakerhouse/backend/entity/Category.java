@@ -2,7 +2,7 @@
 package com.sneakerhouse.backend.entity;
 
 import jakarta.persistence.*;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.hibernate.annotations.Nationalized;
 
 @Entity
 @Table(name = "categories")
@@ -12,10 +12,11 @@ public class Category {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public Long id;
 
-    @org.hibernate.annotations.Nationalized
-    @Column(nullable = false, length = 120, columnDefinition = "NVARCHAR(120)")
+    @Nationalized
+    @Column(nullable = false, length = 120)
     public String name;
 
+    @Nationalized
     @Column(name = "slug", length = 140, unique = true)
     public String slug;
 
@@ -24,13 +25,8 @@ public class Category {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
-    @JsonIgnoreProperties({"parent"})
     public Category parent;
 
     @Column(nullable = false)
     public Boolean active = true;
-
-    public String getName() {
-        return name;
-    }
 }

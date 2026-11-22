@@ -1,6 +1,7 @@
 
 package com.sneakerhouse.backend.controller;
 
+import com.sneakerhouse.backend.dto.ProductDetailResponse;
 import com.sneakerhouse.backend.dto.ProductResponse;
 import com.sneakerhouse.backend.entity.Product;
 import com.sneakerhouse.backend.repository.ProductRepository;
@@ -11,14 +12,18 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 
 @RestController
@@ -30,6 +35,10 @@ public class ProductController {
     public ProductController(ProductRepository repo) {
         this.repo = repo;
     }
+
+    // =====================================================
+    // 1. DANH SÁCH, TÌM KIẾM, LỌC VÀ PHÂN TRANG SẢN PHẨM
+    // =====================================================
 
     @GetMapping
     @Transactional(readOnly = true)
@@ -46,14 +55,26 @@ public class ProductController {
             @RequestParam(defaultValue = "12") int sizePerPage
     ) {
 
-        // 1. Kiem tra phan trang
+        // Kiểm tra phân trang
         if (page < 0 || sizePerPage < 1 || sizePerPage > 100) {
             throw new IllegalArgumentException(
                     "page phải >= 0 và sizePerPage từ 1 đến 100"
             );
         }
 
-        // 2. Kiem tra khoang gia
+        // Kiểm tra khoảng giá
+        if (minPrice != null && minPrice.signum() < 0) {
+            throw new IllegalArgumentException(
+                    "minPrice không được nhỏ hơn 0"
+            );
+        }
+
+        if (maxPrice != null && maxPrice.signum() < 0) {
+            throw new IllegalArgumentException(
+                    "maxPrice không được nhỏ hơn 0"
+            );
+        }
+
         if (minPrice != null && maxPrice != null
                 && minPrice.compareTo(maxPrice) > 0) {
             throw new IllegalArgumentException(
@@ -61,15 +82,15 @@ public class ProductController {
             );
         }
 
-        // 3. Chi hien thi san pham dang hoat dong
+        // Chỉ lấy sản phẩm đang hoạt động
         Specification<Product> spec = (root, query, cb) ->
                 cb.isTrue(root.get("active"));
 
-        // 4. Tim kiem theo ten san pham, SKU hoac thuong hieu
+        // Tìm kiếm theo tên, SKU hoặc thương hiệu
         if (keyword != null && !keyword.isBlank()) {
 
             String searchKeyword =
-                    "%" + keyword.trim().toLowerCase() + "%";
+                    "%" + keyword.trim().toLowerCase(Locale.ROOT) + "%";
 
             spec = spec.and((root, query, cb) ->
                     cb.or(
@@ -94,7 +115,7 @@ public class ProductController {
             );
         }
 
-        // 5. Loc theo danh muc cha va danh muc con truc tiep
+        // Lọc theo danh mục được chọn và danh mục con trực tiếp
         if (categoryId != null) {
 
             spec = spec.and((root, query, cb) -> {
@@ -110,22 +131,13 @@ public class ProductController {
                 );
 
                 return cb.or(
-                        // San pham thuoc danh muc duoc chon
-                        cb.equal(
-                                category.get("id"),
-                                categoryId
-                        ),
-
-                        // San pham thuoc danh muc con cua danh muc duoc chon
-                        cb.equal(
-                                parent.get("id"),
-                                categoryId
-                        )
+                        cb.equal(category.get("id"), categoryId),
+                        cb.equal(parent.get("id"), categoryId)
                 );
             });
         }
 
-        // 6. Loc theo thuong hieu
+        // Lọc theo thương hiệu
         if (brandId != null) {
 
             spec = spec.and((root, query, cb) ->
@@ -136,36 +148,35 @@ public class ProductController {
             );
         }
 
-        // 7. Loc theo gia toi thieu
+        // Lọc giá tối thiểu
         if (minPrice != null) {
 
             spec = spec.and((root, query, cb) ->
                     cb.greaterThanOrEqualTo(
                             cb.coalesce(
-                                    root.get("salePrice"),
-                                    root.get("originalPrice")
+                                    root.<BigDecimal>get("salePrice"),
+                                    root.<BigDecimal>get("originalPrice")
                             ),
                             minPrice
                     )
             );
         }
 
-        // 8. Loc theo gia toi da
+        // Lọc giá tối đa
         if (maxPrice != null) {
 
             spec = spec.and((root, query, cb) ->
                     cb.lessThanOrEqualTo(
                             cb.coalesce(
-                                    root.get("salePrice"),
-                                    root.get("originalPrice")
+                                    root.<BigDecimal>get("salePrice"),
+                                    root.<BigDecimal>get("originalPrice")
                             ),
                             maxPrice
                     )
             );
         }
 
-
-        // 9. Loc theo size chinh xac
+        // Lọc size chính xác
         if (size != null && !size.isBlank()) {
 
             String searchSize = "%," + size.trim() + ",%";
@@ -181,13 +192,11 @@ public class ProductController {
             );
         }
 
-
-
-        // 10. Loc theo mau sac chinh xac, ho tro Unicode
+        // Lọc màu sắc chính xác, không phân biệt chữ hoa/thường
         if (color != null && !color.isBlank()) {
 
-            String selectedColor = color.trim()
-                    .toLowerCase(java.util.Locale.ROOT);
+            String selectedColor =
+                    color.trim().toLowerCase(Locale.ROOT);
 
             spec = spec.and((root, query, cb) -> {
 
@@ -196,32 +205,15 @@ public class ProductController {
                 );
 
                 return cb.or(
-                        // Chi co mot mau
                         cb.equal(colorsColumn, selectedColor),
-
-                        // Mau o dau danh sach
-                        cb.like(
-                                colorsColumn,
-                                selectedColor + ",%"
-                        ),
-
-                        // Mau o giua danh sach
-                        cb.like(
-                                colorsColumn,
-                                "%," + selectedColor + ",%"
-                        ),
-
-                        // Mau o cuoi danh sach
-                        cb.like(
-                                colorsColumn,
-                                "%," + selectedColor
-                        )
+                        cb.like(colorsColumn, selectedColor + ",%"),
+                        cb.like(colorsColumn, "%," + selectedColor + ",%"),
+                        cb.like(colorsColumn, "%," + selectedColor)
                 );
             });
         }
 
-
-        // 11. Sap xep san pham theo gia ban thuc te
+        // Sắp xếp sản phẩm
         Sort order;
 
         if ("price_asc".equalsIgnoreCase(sort)
@@ -231,7 +223,7 @@ public class ProductController {
 
             spec = spec.and((root, query, cb) -> {
 
-                // Khong sap xep trong cau truy van COUNT
+                // Không áp dụng orderBy cho truy vấn COUNT
                 if (query != null
                         && !Long.class.equals(query.getResultType())) {
 
@@ -255,7 +247,7 @@ public class ProductController {
 
         } else {
 
-            order = switch (sort.toLowerCase(java.util.Locale.ROOT)) {
+            order = switch (sort.toLowerCase(Locale.ROOT)) {
 
                 case "best_selling" ->
                         Sort.by("soldCount").descending();
@@ -265,18 +257,19 @@ public class ProductController {
 
                 default ->
                         throw new IllegalArgumentException(
-                                "sort chỉ nhận newest, price_asc, price_desc, best_selling"
+                                "sort chỉ nhận newest, price_asc, "
+                                        + "price_desc, best_selling"
                         );
             };
         }
 
-        // 12. Truy van va phan trang
+        // Truy vấn và phân trang
         Page<Product> result = repo.findAll(
                 spec,
                 PageRequest.of(page, sizePerPage, order)
         );
 
-        // 13. Tao JSON Response
+        // Tạo JSON response
         Map<String, Object> response = new LinkedHashMap<>();
 
         response.put(
@@ -294,5 +287,44 @@ public class ProductController {
         response.put("last", result.isLast());
 
         return response;
+    }
+
+    // =====================================================
+    // 2. CHI TIẾT SẢN PHẨM THEO ID
+    // =====================================================
+
+    @GetMapping("/{id:\\d+}")
+    @Transactional(readOnly = true)
+    public ProductDetailResponse getProductById(
+            @PathVariable Long id
+    ) {
+
+        Product product = repo.findById(id)
+                .filter(p -> Boolean.TRUE.equals(p.active))
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Không tìm thấy sản phẩm"
+                ));
+
+        return ProductDetailResponse.from(product);
+    }
+
+    // =====================================================
+    // 3. CHI TIẾT SẢN PHẨM THEO SLUG
+    // =====================================================
+
+    @GetMapping("/slug/{slug}")
+    @Transactional(readOnly = true)
+    public ProductDetailResponse getProductBySlug(
+            @PathVariable String slug
+    ) {
+
+        Product product = repo.findBySlugAndActiveTrue(slug)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Không tìm thấy sản phẩm"
+                ));
+
+        return ProductDetailResponse.from(product);
     }
 }

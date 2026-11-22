@@ -2,6 +2,7 @@
 package com.sneakerhouse.backend.dto;
 
 import com.sneakerhouse.backend.entity.Product;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
@@ -25,16 +26,19 @@ public record ProductResponse(
 ) {
     public static ProductResponse from(Product p) {
 
-        BigDecimal price =
-                p.salePrice != null
-                && p.salePrice.compareTo(p.originalPrice) < 0
-                        ? p.salePrice
-                        : p.originalPrice;
+        BigDecimal original = p.originalPrice != null
+                ? p.originalPrice
+                : BigDecimal.ZERO;
 
-        int discount = p.originalPrice.signum() > 0
-                ? p.originalPrice.subtract(price)
+        BigDecimal price = p.salePrice != null
+                && p.salePrice.compareTo(original) < 0
+                ? p.salePrice
+                : original;
+
+        int discount = original.signum() > 0
+                ? original.subtract(price)
                     .multiply(BigDecimal.valueOf(100))
-                    .divide(p.originalPrice, 0, RoundingMode.HALF_UP)
+                    .divide(original, 0, RoundingMode.HALF_UP)
                     .intValue()
                 : 0;
 
@@ -43,14 +47,9 @@ public record ProductResponse(
                 p.name,
                 p.sku,
                 p.imageUrl,
-
-                // Lay ten thuong hieu qua getter
-                p.brand == null ? null : p.brand.getName(),
-
-                // Lay ten danh muc qua getter
-                p.category == null ? null : p.category.getName(),
-
-                p.originalPrice,
+                p.brand == null ? null : p.brand.name,
+p.category == null ? null : p.category.name,
+                original,
                 p.salePrice,
                 discount,
                 p.stockQuantity,
