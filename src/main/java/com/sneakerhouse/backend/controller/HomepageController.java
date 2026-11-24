@@ -1,6 +1,7 @@
 
 package com.sneakerhouse.backend.controller;
 
+import com.sneakerhouse.backend.dto.CategoryResponse;
 import com.sneakerhouse.backend.dto.ProductResponse;
 
 import com.sneakerhouse.backend.entity.Brand;
@@ -9,7 +10,7 @@ import com.sneakerhouse.backend.entity.HomeBanner;
 import com.sneakerhouse.backend.entity.HomeCollection;
 import com.sneakerhouse.backend.entity.HomeNews;
 import com.sneakerhouse.backend.entity.Product;
-
+import org.hibernate.Hibernate;
 import com.sneakerhouse.backend.repository.BrandRepository;
 import com.sneakerhouse.backend.repository.CategoryRepository;
 import com.sneakerhouse.backend.repository.HomeBannerRepository;
@@ -17,10 +18,14 @@ import com.sneakerhouse.backend.repository.HomeCollectionRepository;
 import com.sneakerhouse.backend.repository.HomeNewsRepository;
 import com.sneakerhouse.backend.repository.ProductRepository;
 
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.PersistenceUnit;
+
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -31,6 +36,18 @@ import java.util.NoSuchElementException;
 @RequestMapping("/api")
 @Transactional(readOnly = true)
 public class HomepageController {
+
+    // =====================================================
+    // ENTITY MANAGER
+    // Lay ID danh muc cha ma khong serialize Hibernate Proxy
+    // =====================================================
+
+    @PersistenceUnit
+    private EntityManagerFactory entityManagerFactory;
+
+    // =====================================================
+    // REPOSITORIES
+    // =====================================================
 
     private final HomeBannerRepository banners;
     private final CategoryRepository categories;
@@ -82,9 +99,10 @@ public class HomepageController {
         );
 
         // Danh muc san pham
+        // Tra DTO thay vi JPA Entity
         response.put(
                 "categories",
-                categories.findByActiveTrueOrderByNameAsc()
+                categoryTree()
         );
 
         // Thuong hieu
@@ -148,25 +166,25 @@ public class HomepageController {
 
     // =====================================================
     // 2. QUAN LY BANNER
-    // POST /api/banners
-    // PUT /api/banners/{id}
+    // POST   /api/banners
+    // PUT    /api/banners/{id}
     // DELETE /api/banners/{id}
+    //
+    // Quyen ADMIN duoc kiem soat trong SecurityConfig
     // =====================================================
 
-    // Tao banner
     @PostMapping("/banners")
     @Transactional
     public HomeBanner createBanner(
             @RequestBody HomeBanner input
     ) {
 
-        // Khong cho client tu quyet dinh ID khi tao moi
+        // Khong cho client tu quyet dinh ID
         input.id = null;
 
         return banners.save(input);
     }
 
-    // Cap nhat banner
     @PutMapping("/banners/{id}")
     @Transactional
     public HomeBanner updateBanner(
@@ -191,7 +209,6 @@ public class HomepageController {
         return banners.save(banner);
     }
 
-    // Xoa banner
     @DeleteMapping("/banners/{id}")
     @Transactional
     public void deleteBanner(
@@ -208,7 +225,7 @@ public class HomepageController {
     }
 
     // =====================================================
-    // 3. LAY DANH SACH BANNER
+    // 3. DANH SACH BANNER
     // GET /api/banners?type=ALL
     // GET /api/banners?type=MAIN
     // GET /api/banners?type=AD
@@ -232,12 +249,15 @@ public class HomepageController {
     // =====================================================
     // 4. DANH MUC SAN PHAM
     // GET /api/categories
+    //
+    // Tra DTO dang cay:
+    // Danh muc cha -> Danh muc con
     // =====================================================
 
     @GetMapping("/categories")
-    public List<Category> categories() {
+    public List<CategoryResponse> categories() {
 
-        return categories.findByActiveTrueOrderByNameAsc();
+        return categoryTree();
     }
 
     // =====================================================
@@ -339,4 +359,92 @@ public class HomepageController {
                 .map(ProductResponse::from)
                 .toList();
     }
+
+    // =====================================================
+    // 13. CHUYEN CATEGORY ENTITY SANG DTO
+    //
+    // Khong tra truc tiep JPA Entity Category.
+    // Tranh loi Hibernate Lazy Proxy / ByteBuddyInterceptor.
+    //
+    // Danh muc goc co parentId = null.
+    // Danh muc con duoc dua vao children cua danh muc cha.
+    //
+    // Dung chung cho:
+    // GET /api/categories
+    // GET /api/homepage
+    // =====================================================
+
+
+private List<CategoryResponse> categoryTree() {
+
+    List<Category> entities =
+            categories.findByActiveTrueOrderByNameAsc();
+
+    Map<Long, CategoryResponse> nodes =
+            new LinkedHashMap<>();
+
+    // Buoc 1: Chuyen Category Entity sang DTO
+
+for (Category category : entities) {
+
+    // Khoi tao Hibernate Proxy de doc duoc du lieu that
+    Category loaded = Hibernate.unproxy(
+            category,
+            Category.class
+    );
+
+    Long id = (Long) entityManagerFactory
+            .getPersistenceUnitUtil()
+            .getIdentifier(loaded);
+
+    if (id == null) {
+        throw new IllegalStateException(
+                "Danh muc khong co ID hop le"
+        );
+    }
+
+    Long parentId = loaded.parent == null
+            ? null
+            : (Long) entityManagerFactory
+                    .getPersistenceUnitUtil()
+                    .getIdentifier(loaded.parent);
+
+    CategoryResponse dto = new CategoryResponse(
+            id,
+            loaded.name,
+            loaded.slug,
+            loaded.imageUrl,
+            parentId,
+            loaded.active,
+            new ArrayList<>()
+    );
+
+    nodes.put(id, dto);
+}
+
+    // Buoc 2: Xay dung cay danh muc
+    List<CategoryResponse> roots = new ArrayList<>();
+
+    for (CategoryResponse dto : nodes.values()) {
+
+        Long parentId = dto.parentId();
+
+        // Danh muc goc hoac du lieu tu tham chieu
+        if (parentId == null || parentId.equals(dto.id())) {
+            roots.add(dto);
+            continue;
+        }
+
+        CategoryResponse parent = nodes.get(parentId);
+
+        if (parent == null) {
+            // Danh muc cha khong nam trong danh sach active
+            roots.add(dto);
+        } else {
+            parent.children().add(dto);
+        }
+    }
+
+    return roots;
+}
 }
