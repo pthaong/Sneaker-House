@@ -39,7 +39,7 @@ Các endpoint GET công khai cần được `permitAll()` trong `SecurityConfig`
 | Banner | `GET /api/home/banners` | `[{ id, position:"HERO"/"PROMO", title, subtitle, ctaText, link, imageUrl, tag? }]` |
 | Flash Sale | `GET /api/flash-sale/current` | `{ endsAt (ISO), serverTime? (ISO), items:[sản phẩm + { stock, sold }] }` — 404 hoặc rỗng ⇒ FE ẩn khu vực |
 | Nổi bật / mới / bán chạy | `GET /api/products/featured`, `/new`, `/best-sellers` | `[sản phẩm]` |
-| Tìm kiếm + lọc | `GET /api/products?q&category&brand&minPrice&maxPrice&size&color&sort&page&pageSize` | `{ items, total, page, totalPages }`; `sort` = `newest` / `bestseller` / `price_asc` / `price_desc`; `category`/`brand` theo `slug` |
+| Tìm kiếm + lọc | `GET /api/products?keyword&categoryId&brandId&minPrice&maxPrice&size&color&sort&page&sizePerPage` | `{ content, page, size, totalElements, totalPages, last }`; `sort` = `newest` / `best_selling` / `price_asc` / `price_desc`; `categoryId` và `brandId` sử dụng ID |
 | Bộ sưu tập | `GET /api/collections` | `[{ id, name, slug, description, imageUrl }]` |
 | Tin tức | `GET /api/news` | `[{ id, title, summary, imageUrl, publishedAt }]` |
 | Đánh giá nổi bật | `GET /api/reviews/featured` | `[{ id, customerName, rating, content, productName }]` — rỗng ⇒ FE ẩn khu vực |

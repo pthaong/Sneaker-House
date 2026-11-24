@@ -79,7 +79,7 @@ window.HOME_MOCK = (() => {
     if (p.size) list = list.filter((x) => x.sizes.includes(String(p.size)));
     if (p.color) list = list.filter((x) => x.colors.includes(p.color));
     const sorts = { price_asc: (a, b) => eff(a) - eff(b), price_desc: (a, b) => eff(b) - eff(a),
-      newest: (a, b) => b.createdAt.localeCompare(a.createdAt), bestseller: (a, b) => b.sold - a.sold };
+      newest: (a, b) => b.createdAt.localeCompare(a.createdAt), best_selling: (a, b) => b.sold - a.sold };
     if (sorts[p.sort]) list.sort(sorts[p.sort]);
     const size = +p.pageSize || 8, page = Math.max(1, +p.page || 1);
     return { items: list.slice((page - 1) * size, page * size), total: list.length, page, totalPages: Math.max(1, Math.ceil(list.length / size)) };

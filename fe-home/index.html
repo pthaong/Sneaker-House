@@ -28,11 +28,45 @@
   <header class="head" id="top">
     <div class="wrap head__in">
       <a class="logo" href="index.html" aria-label="Sneaker House — trang chủ"><img src="assets/logo-dark.png" alt="Sneaker House" width="1000" height="290"></a>
-      <form class="search" role="search" data-search>
-        <label class="sr-only" for="q">Tìm kiếm</label>
-        <input id="q" name="q" type="search" placeholder="Tìm theo tên giày, mã giày, thương hiệu..." autocomplete="off">
-        <button type="submit" aria-label="Tìm kiếm"><i data-icon="search"></i></button>
-      </form>
+
+<form class="search" role="search" data-search>
+  <label class="sr-only" for="q">Tìm kiếm</label>
+
+  <input
+    id="q"
+    name="q"
+    type="search"
+    placeholder="Tìm theo tên giày, mã giày, thương hiệu..."
+    autocomplete="off"
+    aria-controls="search-suggestions"
+    aria-expanded="false"
+  >
+
+  <button type="submit" aria-label="Tìm kiếm">
+    <i data-icon="search"></i>
+  </button>
+
+  <!-- Goi y san pham khi khach nhap tu khoa -->
+  <div
+    class="search__suggest"
+    id="search-suggestions"
+    data-search-suggest
+    role="region"
+    aria-label="Gợi ý sản phẩm"
+    hidden
+  >
+    <div class="search__suggest-grid"
+         data-search-suggest-list>
+    </div>
+
+    <button
+      class="search__suggest-all"
+      type="button"
+      data-search-suggest-all>
+      Xem tất cả kết quả
+    </button>
+  </div>
+</form>
       <nav class="tools" aria-label="Tiện ích">
         <a class="tool" href="wishlist.html" data-link="wishlist"><i data-icon="heart"></i><span>Yêu thích</span></a>
         <div class="menu" data-menu>
@@ -51,9 +85,9 @@
       </button>
       <nav class="mainnav" aria-label="Điều hướng chính">
         <a href="index.html" data-link="home" aria-current="page">Trang chủ</a>
-        <a href="index.html?category=nam#shop" data-link="men">Giày nam</a>
-        <a href="index.html?category=nu#shop" data-link="women">Giày nữ</a>
-        <a href="index.html?category=tre-em#shop" data-link="kids">Giày trẻ em</a>
+        <a href="products.html?category=nam" data-link="men">Giày nam</a>
+        <a href="products.html?category=nu" data-link="women">Giày nữ</a>
+        <a href="products.html?category=tre-em" data-link="kids">Giày trẻ em</a>
         <a href="#brands" data-link="brands">Thương hiệu</a>
         <a href="#collections" data-link="collections">Bộ sưu tập</a>
         <a href="#flash" data-link="sale">Khuyến mãi</a>
@@ -92,6 +126,75 @@
       <button class="hero__nav hero__nav--next" type="button" aria-label="Banner sau" data-hero-next><i data-icon="chevronRight"></i></button>
     </section>
 
+    <!-- CAM KET DICH VU -->
+    <section class="wrap home-benefits" aria-label="Cam kết dịch vụ">
+      <div class="home-benefits__item">
+        <i data-icon="truck"></i>
+        <div>
+          <strong>Miễn phí giao hàng</strong>
+          <small>Cho đơn từ 500.000đ</small>
+        </div>
+      </div>
+
+      <div class="home-benefits__item">
+        <i data-icon="refresh"></i>
+        <div>
+          <strong>Đổi trả trong 7 ngày</strong>
+          <small>Hỗ trợ nhanh chóng</small>
+        </div>
+      </div>
+
+      <div class="home-benefits__item">
+        <i data-icon="shieldCheck"></i>
+        <div>
+          <strong>Hàng chính hãng 100%</strong>
+          <small>Cam kết chất lượng</small>
+        </div>
+      </div>
+
+      <div class="home-benefits__item">
+        <i data-icon="headset"></i>
+        <div>
+          <strong>Hỗ trợ 24/7</strong>
+          <small>1900 1234</small>
+        </div>
+      </div>
+    </section>
+    <!-- BO LOC SAN PHAM THEO THIET KE DA DUYET -->
+<section class="wrap sec home-find" aria-labelledby="h-find">
+  <div class="home-find__heading">
+    <h2 id="h-find">TÌM GIÀY PHÙ HỢP</h2>
+    <p>Lọc nhanh hàng ngàn mẫu giày tại Sneaker House</p>
+  </div>
+<form class="filters card" data-filters aria-label="Bộ lọc sản phẩm">
+        <div class="filters__row">
+          <label class="ff"><span>Từ khóa</span><input class="input" type="search" name="q" placeholder="Tên, mã giày, thương hiệu" autocomplete="off"></label>
+          <label class="ff"><span>Danh mục</span><select class="input" name="category"><option value="">Tất cả</option></select></label>
+          <label class="ff"><span>Thương hiệu</span><select class="input" name="brand"><option value="">Tất cả</option></select></label>
+          <label class="ff"><span>Khoảng giá</span><select class="input" name="price"><option value="">Tất cả</option></select></label>
+          <label class="ff"><span>Sắp xếp</span>
+            <select class="input" name="sort">
+              <option value="">Mặc định</option><option value="newest">Mới nhất</option><option value="best_selling">Bán chạy</option>
+              <option value="price_asc">Giá tăng dần</option><option value="price_desc">Giá giảm dần</option>
+            </select>
+          </label>
+        </div>
+        <div class="filters__row filters__row--chips">
+          <fieldset class="chipset"><legend>Size</legend><div data-sizes></div></fieldset>
+          <fieldset class="chipset"><legend>Màu sắc</legend><div data-colors></div></fieldset>
+          <div class="filters__actions">
+            <button class="btn" type="submit">Áp dụng</button>
+            <button class="btn btn--ghost" type="button" data-reset>Xóa bộ lọc</button>
+          </div>
+        </div>
+      </form>
+</section>
+<section class="wrap sec" id="shop" aria-labelledby="h-shop" hidden>
+      <h2 class="sec__title" id="h-shop">Tất cả sản phẩm</h2>
+      <p class="resultline" data-resultline role="status" aria-live="polite"></p>
+      <div class="grid" data-slot="shop"></div>
+      <div class="loadmore" data-loadmore hidden><button class="btn btn--ghost" type="button">Xem thêm sản phẩm</button></div>
+    </section>
     <section class="wrap sec" aria-labelledby="h-cats">
       <h2 class="sec__title" id="h-cats">Danh mục nổi bật</h2>
       <div class="cats" data-slot="categories"></div>
@@ -126,7 +229,7 @@
     </section>
 
     <section class="wrap sec" id="best" aria-labelledby="h-best">
-      <div class="sec__head"><h2 class="sec__title" id="h-best">Sản phẩm bán chạy</h2><a class="more" href="index.html?sort=bestseller#shop">Xem tất cả<i data-icon="chevronRight"></i></a></div>
+      <div class="sec__head"><h2 class="sec__title" id="h-best">Sản phẩm bán chạy</h2><a class="more" href="index.html?sort=best_selling#shop">Xem tất cả<i data-icon="chevronRight"></i></a></div>
       <div class="grid" data-slot="bestSellers"></div>
     </section>
 
@@ -138,37 +241,6 @@
       <div class="sec__head"><h2 class="sec__title" id="h-col">Bộ sưu tập giày</h2></div>
       <div class="cols" data-slot="collections"></div>
     </section>
-
-    <!-- 6. Tìm kiếm, lọc, sắp xếp -->
-    <section class="wrap sec" id="shop" aria-labelledby="h-shop">
-      <h2 class="sec__title" id="h-shop">Tất cả sản phẩm</h2>
-      <form class="filters card" data-filters aria-label="Bộ lọc sản phẩm">
-        <div class="filters__row">
-          <label class="ff"><span>Từ khóa</span><input class="input" type="search" name="q" placeholder="Tên, mã giày, thương hiệu" autocomplete="off"></label>
-          <label class="ff"><span>Danh mục</span><select class="input" name="category"><option value="">Tất cả</option></select></label>
-          <label class="ff"><span>Thương hiệu</span><select class="input" name="brand"><option value="">Tất cả</option></select></label>
-          <label class="ff"><span>Khoảng giá</span><select class="input" name="price"><option value="">Tất cả</option></select></label>
-          <label class="ff"><span>Sắp xếp</span>
-            <select class="input" name="sort">
-              <option value="">Mặc định</option><option value="newest">Mới nhất</option><option value="bestseller">Bán chạy</option>
-              <option value="price_asc">Giá tăng dần</option><option value="price_desc">Giá giảm dần</option>
-            </select>
-          </label>
-        </div>
-        <div class="filters__row filters__row--chips">
-          <fieldset class="chipset"><legend>Size</legend><div data-sizes></div></fieldset>
-          <fieldset class="chipset"><legend>Màu sắc</legend><div data-colors></div></fieldset>
-          <div class="filters__actions">
-            <button class="btn" type="submit">Áp dụng</button>
-            <button class="btn btn--ghost" type="button" data-reset>Xóa bộ lọc</button>
-          </div>
-        </div>
-      </form>
-      <p class="resultline" data-resultline role="status" aria-live="polite"></p>
-      <div class="grid" data-slot="shop"></div>
-      <div class="loadmore" data-loadmore hidden><button class="btn btn--ghost" type="button">Xem thêm sản phẩm</button></div>
-    </section>
-
     <!-- 8. Tin tức, đánh giá, đăng ký ưu đãi -->
     <section class="wrap sec" id="news" aria-labelledby="h-news">
       <div class="sec__head"><h2 class="sec__title" id="h-news">Tin tức &amp; bài viết nổi bật</h2></div>
@@ -238,7 +310,8 @@
 
   <div class="toast" data-toast role="status" aria-live="polite" hidden></div>
   <script src="js/home-config.js"></script>
-  <script src="js/home-mock.js"></script>
-  <script src="js/home.js"></script>
+<script src="js/home-mock.js"></script>
+<script src="js/product-card.js"></script>
+<script src="js/home.js"></script>
 </body>
 </html>
