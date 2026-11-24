@@ -2,15 +2,11 @@
 package com.sneakerhouse.backend.controller;
 
 import com.sneakerhouse.backend.dto.ProductResponse;
-
-import com.sneakerhouse.backend.entity.Brand;
-import com.sneakerhouse.backend.entity.Category;
 import com.sneakerhouse.backend.entity.HomeBanner;
 import com.sneakerhouse.backend.entity.HomeCollection;
 import com.sneakerhouse.backend.entity.HomeNews;
 import com.sneakerhouse.backend.entity.Product;
 
-import com.sneakerhouse.backend.repository.BrandRepository;
 import com.sneakerhouse.backend.repository.CategoryRepository;
 import com.sneakerhouse.backend.repository.HomeBannerRepository;
 import com.sneakerhouse.backend.repository.HomeCollectionRepository;
@@ -34,7 +30,6 @@ public class HomepageController {
 
     private final HomeBannerRepository banners;
     private final CategoryRepository categories;
-    private final BrandRepository brands;
     private final ProductRepository products;
     private final HomeCollectionRepository collections;
     private final HomeNewsRepository news;
@@ -42,102 +37,87 @@ public class HomepageController {
     public HomepageController(
             HomeBannerRepository banners,
             CategoryRepository categories,
-            BrandRepository brands,
             ProductRepository products,
             HomeCollectionRepository collections,
             HomeNewsRepository news
     ) {
         this.banners = banners;
         this.categories = categories;
-        this.brands = brands;
         this.products = products;
         this.collections = collections;
         this.news = news;
     }
 
-    // =====================================================
-    // 1. API TONG HOP DU LIEU TRANG CHU
+    // 1. API tong hop du lieu trang chu
     // GET /api/homepage
-    // =====================================================
 
     @GetMapping("/homepage")
     public Map<String, Object> homepage() {
 
         Map<String, Object> response = new LinkedHashMap<>();
 
-        // Banner chinh
         response.put(
                 "mainBanners",
-                banners.findByActiveTrueAndBannerTypeOrderByPositionAsc(
-                        "MAIN"
-                )
+                banners.findByActiveTrueAndBannerTypeOrderByPositionAsc("MAIN")
         );
 
-        // Banner quang cao
         response.put(
                 "advertisingBanners",
-                banners.findByActiveTrueAndBannerTypeOrderByPositionAsc(
-                        "AD"
-                )
+                banners.findByActiveTrueAndBannerTypeOrderByPositionAsc("AD")
         );
 
-        // Danh muc san pham
-        response.put(
-                "categories",
+        // Chuyen Category Entity sang Map de tranh loi Hibernate Proxy
+        List<Map<String, Object>> categoryList =
                 categories.findByActiveTrueOrderByNameAsc()
-        );
+                        .stream()
+                        .map(category -> {
+                            Map<String, Object> item = new LinkedHashMap<>();
 
-        // Thuong hieu
-        response.put(
-                "brands",
-                brands.findByActiveTrueOrderByNameAsc()
-        );
+                            item.put("id", category.id);
+                            item.put("name", category.name);
+                            item.put("slug", category.slug);
+                            item.put("imageUrl", category.imageUrl);
 
-        // San pham noi bat
+                            item.put(
+                                    "parentId",
+                                    category.parent == null
+                                            ? null
+                                            : category.parent.id
+                            );
+
+                            return item;
+                        })
+                        .toList();
+
+        response.put("categories", categoryList);
+
         response.put(
                 "featuredProducts",
-                map(
-                        products
-                                .findTop8ByActiveTrueAndFeaturedTrueOrderByCreatedAtDesc()
-                )
+                map(products.findTop8ByActiveTrueAndFeaturedTrueOrderByCreatedAtDesc())
         );
 
-        // San pham moi ve
         response.put(
                 "newArrivals",
-                map(
-                        products
-                                .findTop8ByActiveTrueOrderByCreatedAtDesc()
-                )
+                map(products.findTop8ByActiveTrueOrderByCreatedAtDesc())
         );
 
-        // San pham ban chay
         response.put(
                 "bestSellers",
-                map(
-                        products
-                                .findTop8ByActiveTrueOrderBySoldCountDesc()
-                )
+                map(products.findTop8ByActiveTrueOrderBySoldCountDesc())
         );
 
-        // Flash Sale con thoi han
         response.put(
                 "flashSales",
-                map(
-                        products
-                                .findByActiveTrueAndFlashSaleEndAfterOrderByFlashSaleEndAsc(
-                                        LocalDateTime.now()
-                                )
-                )
+                map(products.findByActiveTrueAndFlashSaleEndAfterOrderByFlashSaleEndAsc(
+                        LocalDateTime.now()
+                ))
         );
 
-        // Bo suu tap
         response.put(
                 "collections",
                 collections.findByActiveTrueOrderByIdDesc()
         );
 
-        // Tin tuc
         response.put(
                 "news",
                 news.findTop8ByActiveTrueOrderByPublishedAtDesc()
@@ -146,27 +126,16 @@ public class HomepageController {
         return response;
     }
 
-    // =====================================================
-    // 2. QUAN LY BANNER
-    // POST /api/banners
-    // PUT /api/banners/{id}
-    // DELETE /api/banners/{id}
-    // =====================================================
+    // 2. Quan ly banner
 
-    // Tao banner
     @PostMapping("/banners")
     @Transactional
-    public HomeBanner createBanner(
-            @RequestBody HomeBanner input
-    ) {
+    public HomeBanner createBanner(@RequestBody HomeBanner input) {
 
-        // Khong cho client tu quyet dinh ID khi tao moi
         input.id = null;
-
         return banners.save(input);
     }
 
-    // Cap nhat banner
     @PutMapping("/banners/{id}")
     @Transactional
     public HomeBanner updateBanner(
@@ -176,9 +145,7 @@ public class HomepageController {
 
         HomeBanner banner = banners.findById(id)
                 .orElseThrow(() ->
-                        new NoSuchElementException(
-                                "Không tìm thấy banner"
-                        )
+                        new NoSuchElementException("Không tìm thấy banner")
                 );
 
         banner.title = input.title;
@@ -191,28 +158,18 @@ public class HomepageController {
         return banners.save(banner);
     }
 
-    // Xoa banner
     @DeleteMapping("/banners/{id}")
     @Transactional
-    public void deleteBanner(
-            @PathVariable Long id
-    ) {
+    public void deleteBanner(@PathVariable Long id) {
 
         if (!banners.existsById(id)) {
-            throw new NoSuchElementException(
-                    "Không tìm thấy banner"
-            );
+            throw new NoSuchElementException("Không tìm thấy banner");
         }
 
         banners.deleteById(id);
     }
 
-    // =====================================================
-    // 3. LAY DANH SACH BANNER
-    // GET /api/banners?type=ALL
-    // GET /api/banners?type=MAIN
-    // GET /api/banners?type=AD
-    // =====================================================
+    // 3. Lay danh sach banner
 
     @GetMapping("/banners")
     public List<HomeBanner> banners(
@@ -223,94 +180,50 @@ public class HomepageController {
             return banners.findByActiveTrueOrderByPositionAsc();
         }
 
-        return banners
-                .findByActiveTrueAndBannerTypeOrderByPositionAsc(
-                        type.toUpperCase(Locale.ROOT)
-                );
+        return banners.findByActiveTrueAndBannerTypeOrderByPositionAsc(
+                type.toUpperCase(Locale.ROOT)
+        );
     }
 
-    // =====================================================
-    // 4. DANH MUC SAN PHAM
-    // GET /api/categories
-    // =====================================================
-
-    @GetMapping("/categories")
-    public List<Category> categories() {
-
-        return categories.findByActiveTrueOrderByNameAsc();
-    }
-
-    // =====================================================
-    // 5. THUONG HIEU
-    // GET /api/brands
-    // =====================================================
-
-    @GetMapping("/brands")
-    public List<Brand> brands() {
-
-        return brands.findByActiveTrueOrderByNameAsc();
-    }
-
-    // =====================================================
-    // 6. SAN PHAM NOI BAT
-    // GET /api/products/featured
-    // =====================================================
+    // 4. San pham noi bat
 
     @GetMapping("/products/featured")
     public List<ProductResponse> featured() {
 
         return map(
-                products
-                        .findTop8ByActiveTrueAndFeaturedTrueOrderByCreatedAtDesc()
+                products.findTop8ByActiveTrueAndFeaturedTrueOrderByCreatedAtDesc()
         );
     }
 
-    // =====================================================
-    // 7. SAN PHAM MOI VE
-    // GET /api/products/new-arrivals
-    // =====================================================
+    // 5. San pham moi ve
 
     @GetMapping("/products/new-arrivals")
     public List<ProductResponse> newest() {
 
-        return map(
-                products.findTop8ByActiveTrueOrderByCreatedAtDesc()
-        );
+        return map(products.findTop8ByActiveTrueOrderByCreatedAtDesc());
     }
 
-    // =====================================================
-    // 8. SAN PHAM BAN CHAY
-    // GET /api/products/best-sellers
-    // =====================================================
+    // 6. San pham ban chay
 
     @GetMapping("/products/best-sellers")
     public List<ProductResponse> best() {
 
-        return map(
-                products.findTop8ByActiveTrueOrderBySoldCountDesc()
-        );
+        return map(products.findTop8ByActiveTrueOrderBySoldCountDesc());
     }
 
-    // =====================================================
-    // 9. FLASH SALE
-    // GET /api/flash-sales
-    // =====================================================
+    // 7. Flash Sale
 
     @GetMapping("/flash-sales")
     public List<ProductResponse> flash() {
 
         return map(
-                products
-                        .findByActiveTrueAndFlashSaleEndAfterOrderByFlashSaleEndAsc(
-                                LocalDateTime.now()
-                        )
+                products.findByActiveTrueAndFlashSaleEndAfterOrderByFlashSaleEndAsc(
+                        LocalDateTime.now()
+                )
         );
     }
 
-    // =====================================================
-    // 10. BO SUU TAP
-    // GET /api/collections
-    // =====================================================
+    // 8. Bo suu tap
 
     @GetMapping("/collections")
     public List<HomeCollection> collections() {
@@ -318,10 +231,7 @@ public class HomepageController {
         return collections.findByActiveTrueOrderByIdDesc();
     }
 
-    // =====================================================
-    // 11. TIN TUC
-    // GET /api/news
-    // =====================================================
+    // 9. Tin tuc
 
     @GetMapping("/news")
     public List<HomeNews> news() {
@@ -329,9 +239,7 @@ public class HomepageController {
         return news.findTop8ByActiveTrueOrderByPublishedAtDesc();
     }
 
-    // =====================================================
-    // 12. CHUYEN PRODUCT ENTITY SANG DTO
-    // =====================================================
+    // 10. Chuyen Product Entity sang DTO
 
     private List<ProductResponse> map(List<Product> list) {
 
