@@ -1,0 +1,83 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#111111"><title>Danh sách sản phẩm | Sneaker House</title><link rel="icon" href="../fe-home/assets/favicon.svg"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="../fe-home/css/home.css"><link rel="stylesheet" href="css/catalog.css"></head><body><a class="skip-link" href="#main">Bỏ qua tới nội dung chính</a>
+  <div class="promo">
+    <div class="wrap promo__in">
+      <span><i data-icon="truck"></i>Miễn phí giao hàng cho đơn từ 500.000đ</span>
+      <span><i data-icon="refresh"></i>Đổi trả trong 7 ngày</span>
+      <span><i data-icon="shieldCheck"></i>Hàng chính hãng 100%</span>
+      <span><i data-icon="pin"></i>Hệ thống cửa hàng</span>
+      <span><i data-icon="package"></i><a href="../fe-home/index.html" data-link="orders">Tra cứu đơn hàng</a></span>
+      <span><i data-icon="headset"></i>Hỗ trợ 24/7: <b class="promo__tel" data-hotline>1900 1234</b></span>
+    </div>
+  </div>
+
+  <header class="head" id="top">
+    <div class="wrap head__in">
+      <a class="logo" href="../fe-home/index.html" aria-label="Sneaker House — trang chủ"><img src="../fe-home/assets/logo-dark.png" alt="Sneaker House" width="1000" height="290"></a>
+      <form class="search" role="search" data-search>
+        <label class="sr-only" for="q">Tìm kiếm</label>
+        <input id="q" name="q" type="search" placeholder="Tìm theo tên giày, mã giày, thương hiệu..." autocomplete="off">
+        <button type="submit" aria-label="Tìm kiếm"><i data-icon="search"></i></button>
+      </form>
+      <nav class="tools" aria-label="Tiện ích">
+        <a class="tool" href="#wishlist" data-link="wishlist"><i data-icon="heart"></i><span>Yêu thích</span></a>
+        <div class="menu" data-menu>
+          <button class="tool" type="button" aria-expanded="false" aria-controls="account-menu" data-menu-btn>
+            <i data-icon="user"></i><span data-user-name>Tài khoản</span><i data-icon="chevronDown" class="chev"></i>
+          </button>
+          <ul class="menu__list" id="account-menu" hidden data-account-list></ul>
+        </div>
+        <a class="tool" href="#cart" data-link="cart"><i data-icon="cart"></i><span>Giỏ hàng</span></a>
+      </nav>
+    </div>
+
+    <div class="wrap navrow">
+      <button class="cat" type="button" aria-expanded="false" aria-controls="mega" data-mega-btn>
+        <i data-icon="menu"></i><span>Danh mục sản phẩm</span><i data-icon="chevronDown"></i>
+      </button>
+      <nav class="mainnav" aria-label="Điều hướng chính">
+        <a href="../fe-home/index.html" data-link="home" aria-current="page">Trang chủ</a>
+        <a href="products.html" data-link="men">Giày nam</a>
+        <a href="products.html" data-link="women">Giày nữ</a>
+        <a href="products.html" data-link="kids">Giày trẻ em</a>
+        <a href="products.html" data-link="brands">Thương hiệu</a>
+        <a href="products.html" data-link="collections">Bộ sưu tập</a>
+        <a href="products.html?sort=newest" data-link="sale">Khuyến mãi</a>
+        <a href="../fe-home/index.html#news" data-link="news">Tin tức</a>
+        <a href="../fe-home/index.html#contact" data-link="contact">Liên hệ</a>
+      </nav>
+    </div>
+
+    <div class="mega" id="mega" hidden data-mega>
+      <button class="mega__close" type="button" aria-label="Đóng danh mục" data-mega-close><i data-icon="x"></i></button>
+      <div class="wrap mega__in">
+        <ul class="mega__main" role="menu" aria-label="Danh mục chính" data-mega-main></ul>
+        <div class="mega__body" data-mega-body></div>
+        <aside class="mega__side">
+          <div data-mega-brands></div>
+          <div data-mega-prices></div>
+          <a class="mega__banner" href="products.html?sort=newest" data-mega-banner>
+            <span class="mega__tag">Flash Sale</span>
+            <strong>Giảm đến 50%</strong>
+            <span>Sneaker chính hãng — số lượng có hạn</span>
+          </a>
+        </aside>
+      </div>
+    </div>
+  </header>
+  <div class="mega-scrim" data-mega-scrim hidden></div>
+
+<main id="main" class="catalog wrap"><nav class="crumb" aria-label="Breadcrumb"><a href="../fe-home/index.html">Trang chủ</a><span>/</span><span data-crumb>Danh sách sản phẩm</span></nav>
+<section class="catalog-banner"><div><span class="eyebrow">SNEAKER HOUSE COLLECTION</span><h1 data-banner-title>BỘ SƯU TẬP GIÀY SNEAKER</h1><p data-banner-desc>Khám phá những thiết kế nổi bật, hoàn thiện phong cách mỗi ngày.</p><a href="#catalog-results" class="btn">Khám phá ngay</a></div><img src="../fe-home/assets/p-airforce.webp" alt="Bộ sưu tập sneaker"></section>
+<div class="catalog-layout"><aside class="sidebar card" aria-label="Bộ lọc sản phẩm"><div class="sidebar__head"><h2>Bộ lọc tìm kiếm</h2><button type="button" class="text-button" data-clear>Tất cả</button></div>
+<section class="filter-group"><h3>Danh mục</h3><div data-category-filters class="filter-options"><p class="muted">Đang tải danh mục…</p></div></section>
+<section class="filter-group"><h3>Thương hiệu</h3><div data-brand-filters class="filter-options"><p class="muted">Đang tải thương hiệu…</p></div></section>
+<section class="filter-group"><h3>Khoảng giá</h3><div class="price-inputs"><label><span class="sr-only">Giá từ</span><input type="number" min="0" placeholder="Từ" data-min-price></label><span>–</span><label><span class="sr-only">Giá đến</span><input type="number" min="0" placeholder="Đến" data-max-price></label></div><button class="btn btn--small btn--dark" type="button" data-apply-price>Áp dụng</button></section>
+<section class="filter-group"><h3>Kích thước</h3><div class="size-chips" data-size-filters></div></section>
+<section class="filter-group"><h3>Màu sắc</h3><div class="color-chips" data-color-filters></div></section>
+<section class="filter-group"><h3>Tình trạng</h3><label class="check-row"><input type="checkbox" data-filter-new disabled><span>Hàng mới <small>Chưa được API hỗ trợ</small></span></label><label class="check-row"><input type="checkbox" data-filter-stock disabled><span>Còn hàng <small>Chưa được API hỗ trợ</small></span></label></section>
+</aside><section class="catalog-main" id="catalog-results"><div class="catalog-head"><div><p class="eyebrow">FIND YOUR STYLE</p><h2 data-heading>Sản phẩm dành cho bạn</h2><p class="muted" data-result-count>Đang tải sản phẩm…</p></div><div class="catalog-controls"><label class="sort-control">Sắp xếp <select data-sort><option value="newest">Mới nhất</option><option value="price_asc">Giá tăng dần</option><option value="price_desc">Giá giảm dần</option><option value="best_selling">Bán chạy</option></select></label><div class="view-switch" role="group" aria-label="Chế độ hiển thị"><button type="button" data-view="grid" aria-pressed="true" title="Dạng lưới">▦</button><button type="button" data-view="list" aria-pressed="false" title="Dạng danh sách">☷</button></div></div></div>
+<div class="active-filters" data-active-filters></div><div class="product-grid" data-products aria-live="polite"><div class="catalog-loading">Đang tải sản phẩm…</div></div><nav class="pagination" data-pagination aria-label="Phân trang"></nav></section></div></main>
+  <footer class="foot"><div class="wrap foot__in"><div class="foot__brand"><img src="../fe-home/assets/logo-light.png" alt="Sneaker House"><p>Sneaker House — phong cách trên từng bước chân.</p></div><div><h3>Hỗ trợ khách hàng</h3><ul><li>Chính sách đổi trả</li><li>Chính sách vận chuyển</li><li>Hướng dẫn chọn size</li></ul></div><div><h3>Về Sneaker House</h3><ul><li><a href="../fe-home/index.html">Trang chủ</a></li><li><a href="products.html">Sản phẩm</a></li></ul></div><div><h3>Liên hệ</h3><ul><li>Hotline: 1900 1234</li><li>Hà Nội, Việt Nam</li></ul></div></div><div class="foot__bar"><div class="wrap">© Sneaker House</div></div></footer>
+  <div class="toast" data-toast role="status" aria-live="polite" hidden></div>
+  <script src="js/catalog-config.js"></script><script src="js/catalog-common.js"></script>
+  <script src="js/listing.js"></script></body></html>
