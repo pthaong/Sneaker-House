@@ -1,0 +1,74 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#111111"><title>Chi tiết sản phẩm | Sneaker House</title><link rel="icon" href="../fe-home/assets/favicon.svg"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="../fe-home/css/home.css"><link rel="stylesheet" href="css/catalog.css"></head><body><a class="skip-link" href="#main">Bỏ qua tới nội dung chính</a>
+  <div class="promo">
+    <div class="wrap promo__in">
+      <span><i data-icon="truck"></i>Miễn phí giao hàng cho đơn từ 500.000đ</span>
+      <span><i data-icon="refresh"></i>Đổi trả trong 7 ngày</span>
+      <span><i data-icon="shieldCheck"></i>Hàng chính hãng 100%</span>
+      <span><i data-icon="pin"></i>Hệ thống cửa hàng</span>
+      <span><i data-icon="package"></i><a href="../fe-home/index.html" data-link="orders">Tra cứu đơn hàng</a></span>
+      <span><i data-icon="headset"></i>Hỗ trợ 24/7: <b class="promo__tel" data-hotline>1900 1234</b></span>
+    </div>
+  </div>
+
+  <header class="head" id="top">
+    <div class="wrap head__in">
+      <a class="logo" href="../fe-home/index.html" aria-label="Sneaker House — trang chủ"><img src="../fe-home/assets/logo-dark.png" alt="Sneaker House" width="1000" height="290"></a>
+      <form class="search" role="search" data-search>
+        <label class="sr-only" for="q">Tìm kiếm</label>
+        <input id="q" name="q" type="search" placeholder="Tìm theo tên giày, mã giày, thương hiệu..." autocomplete="off">
+        <button type="submit" aria-label="Tìm kiếm"><i data-icon="search"></i></button>
+      </form>
+      <nav class="tools" aria-label="Tiện ích">
+        <a class="tool" href="#wishlist" data-link="wishlist"><i data-icon="heart"></i><span>Yêu thích</span></a>
+        <div class="menu" data-menu>
+          <button class="tool" type="button" aria-expanded="false" aria-controls="account-menu" data-menu-btn>
+            <i data-icon="user"></i><span data-user-name>Tài khoản</span><i data-icon="chevronDown" class="chev"></i>
+          </button>
+          <ul class="menu__list" id="account-menu" hidden data-account-list></ul>
+        </div>
+        <a class="tool" href="#cart" data-link="cart"><i data-icon="cart"></i><span>Giỏ hàng</span></a>
+      </nav>
+    </div>
+
+    <div class="wrap navrow">
+      <button class="cat" type="button" aria-expanded="false" aria-controls="mega" data-mega-btn>
+        <i data-icon="menu"></i><span>Danh mục sản phẩm</span><i data-icon="chevronDown"></i>
+      </button>
+      <nav class="mainnav" aria-label="Điều hướng chính">
+        <a href="../fe-home/index.html" data-link="home" aria-current="page">Trang chủ</a>
+        <a href="products.html" data-link="men">Giày nam</a>
+        <a href="products.html" data-link="women">Giày nữ</a>
+        <a href="products.html" data-link="kids">Giày trẻ em</a>
+        <a href="products.html" data-link="brands">Thương hiệu</a>
+        <a href="products.html" data-link="collections">Bộ sưu tập</a>
+        <a href="products.html?sort=newest" data-link="sale">Khuyến mãi</a>
+        <a href="../fe-home/index.html#news" data-link="news">Tin tức</a>
+        <a href="../fe-home/index.html#contact" data-link="contact">Liên hệ</a>
+      </nav>
+    </div>
+
+    <div class="mega" id="mega" hidden data-mega>
+      <button class="mega__close" type="button" aria-label="Đóng danh mục" data-mega-close><i data-icon="x"></i></button>
+      <div class="wrap mega__in">
+        <ul class="mega__main" role="menu" aria-label="Danh mục chính" data-mega-main></ul>
+        <div class="mega__body" data-mega-body></div>
+        <aside class="mega__side">
+          <div data-mega-brands></div>
+          <div data-mega-prices></div>
+          <a class="mega__banner" href="products.html?sort=newest" data-mega-banner>
+            <span class="mega__tag">Flash Sale</span>
+            <strong>Giảm đến 50%</strong>
+            <span>Sneaker chính hãng — số lượng có hạn</span>
+          </a>
+        </aside>
+      </div>
+    </div>
+  </header>
+  <div class="mega-scrim" data-mega-scrim hidden></div>
+
+<main id="main" class="wrap detail-page"><nav class="crumb"><a href="../fe-home/index.html">Trang chủ</a><span>/</span><a href="products.html">Giày sneaker</a><span>/</span><span data-crumb>Chi tiết sản phẩm</span></nav><div class="detail-state" data-detail-state>Đang tải thông tin sản phẩm…</div><section class="detail-layout" data-detail hidden><div class="gallery"><div class="thumb-list" data-thumbnails></div><div class="gallery-main"><img data-main-image alt="Ảnh sản phẩm"><button type="button" class="zoom-button" data-zoom aria-label="Phóng to ảnh">⌕</button></div></div><div class="detail-info"><p class="eyebrow" data-brand></p><h1 data-name></h1><div class="detail-meta"><span>SKU: <b data-sku></b></span><span data-rating></span><span data-sold></span></div><div class="detail-price" data-price></div><p class="detail-description" data-description></p><div class="variant-group"><h3>Màu sắc <span data-selected-color></span></h3><div class="variant-options" data-colors></div></div><div class="variant-group"><div class="size-heading"><h3>Kích thước</h3><button type="button" class="text-button" data-size-guide>Mẹo chọn size</button></div><div class="variant-options size-options" data-sizes></div></div><div class="stock-status" data-stock role="status">Vui lòng chọn màu và size</div><div class="quantity-row"><span>Số lượng</span><div class="quantity-control"><button type="button" data-qty-minus aria-label="Giảm số lượng">−</button><input type="number" min="1" value="1" data-qty><button type="button" data-qty-plus aria-label="Tăng số lượng">+</button></div></div><div class="detail-actions"><button type="button" class="btn btn--ghost" data-add-cart>Thêm vào giỏ</button><button type="button" class="btn" data-buy-now>Mua ngay</button></div><ul class="service-points"><li>✓ Hàng chính hãng 100%</li><li>✓ Đổi trả trong 7 ngày</li><li>✓ Hỗ trợ tư vấn chọn size</li></ul></div></section>
+<section class="detail-tabs" data-detail-tabs hidden><div class="tab-buttons"><button type="button" class="is-active" data-tab="description">Chi tiết sản phẩm</button><button type="button" data-tab="reviews">Đánh giá <span data-review-count></span></button><button type="button" data-tab="related">Sản phẩm liên quan</button></div><div class="tab-panel" data-panel="description"><h2>Thông số sản phẩm</h2><div data-specs></div><div class="size-guide" data-size-table><h3>Bảng hướng dẫn chọn size</h3><p>Đối chiếu chiều dài bàn chân với size giày trước khi đặt hàng.</p><table><thead><tr><th>Size</th><th>38</th><th>39</th><th>40</th><th>41</th><th>42</th><th>43</th><th>44</th></tr></thead><tbody><tr><th>Chiều dài chân (cm)</th><td>24</td><td>24.5</td><td>25</td><td>25.5</td><td>26</td><td>26.5</td><td>27</td></tr></tbody></table><small>Bảng tham khảo chung; ưu tiên hướng dẫn size riêng của thương hiệu nếu có.</small></div></div><div class="tab-panel" data-panel="reviews" hidden><div data-reviews>Đang tải đánh giá…</div></div><div class="tab-panel" data-panel="related" hidden><div class="product-grid related-grid" data-related></div></div></section></main>
+<div class="image-modal" data-image-modal hidden role="dialog" aria-modal="true" aria-label="Ảnh sản phẩm phóng to"><button type="button" data-close-zoom aria-label="Đóng">×</button><img data-zoom-image alt="Ảnh sản phẩm phóng to"></div><div class="size-modal" data-size-modal hidden role="dialog" aria-modal="true" aria-labelledby="size-modal-title"><div><button type="button" data-close-size aria-label="Đóng">×</button><h2 id="size-modal-title">Hướng dẫn chọn size</h2><p>Đo chiều dài bàn chân từ gót đến đầu ngón dài nhất, sau đó đối chiếu bảng size. Nếu nằm giữa hai size, cân nhắc chọn size lớn hơn.</p></div></div>  <footer class="foot"><div class="wrap foot__in"><div class="foot__brand"><img src="../fe-home/assets/logo-light.png" alt="Sneaker House"><p>Sneaker House — phong cách trên từng bước chân.</p></div><div><h3>Hỗ trợ khách hàng</h3><ul><li>Chính sách đổi trả</li><li>Chính sách vận chuyển</li><li>Hướng dẫn chọn size</li></ul></div><div><h3>Về Sneaker House</h3><ul><li><a href="../fe-home/index.html">Trang chủ</a></li><li><a href="products.html">Sản phẩm</a></li></ul></div><div><h3>Liên hệ</h3><ul><li>Hotline: 1900 1234</li><li>Hà Nội, Việt Nam</li></ul></div></div><div class="foot__bar"><div class="wrap">© Sneaker House</div></div></footer>
+  <div class="toast" data-toast role="status" aria-live="polite" hidden></div>
+  <script src="js/catalog-config.js"></script><script src="js/catalog-common.js"></script>
+  <script src="js/detail.js"></script></body></html>
