@@ -1,0 +1,201 @@
+
+/* ============================================
+   SNEAKER HOUSE - TRANG DANH MUC SAN PHAM
+   Bo cuc tham khao PUMA
+   Giu nguyen Header, Footer va Product Card
+============================================ */
+
+.catalog-page {
+  min-height: 70vh;
+  padding: 12px 0 56px;
+  background: #f7f8fb;
+}
+
+.catalog {
+  padding-top: 22px;
+}
+
+/* Breadcrumb */
+.catalog__breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+  font-size: 14px;
+  color: #667085;
+}
+
+.catalog__breadcrumb a {
+  color: #171b27;
+  text-decoration: none;
+}
+
+.catalog__breadcrumb a:hover {
+  color: #e11d2a;
+}
+
+/* Tieu de danh muc */
+.catalog__heading {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 26px;
+}
+
+.catalog__heading h1 {
+  margin: 0;
+  color: #171b27;
+  font-size: 32px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.catalog__heading span {
+  color: #98a2b3;
+  font-size: 14px;
+}
+
+/* Thanh bo loc ngang */
+.catalog__filters {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  padding: 18px;
+  margin-bottom: 20px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.catalog__filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.catalog__filters label > span {
+  color: #344054;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.catalog__filters select {
+  width: 100%;
+  height: 44px;
+  padding: 0 12px;
+  border: 1px solid #d0d5dd;
+  border-radius: 7px;
+  background: #fff;
+  color: #171b27;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.catalog__filters select:hover {
+  border-color: #e11d2a;
+}
+
+.catalog__filters select:focus-visible {
+  outline: 2px solid #e11d2a;
+  outline-offset: 2px;
+}
+
+/* Nut dieu khien */
+.catalog__actions {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.catalog__actions .btn {
+  min-width: 120px;
+  height: 42px;
+}
+
+/* Trang thai ket qua */
+.catalog .resultline {
+  margin: 8px 0 18px;
+  color: #667085;
+  font-size: 14px;
+}
+
+/* Luoi san pham - tai su dung .grid cua home.css */
+.catalog [data-catalog-grid] {
+  margin-top: 16px;
+}
+
+/* Phan trang */
+.catalog__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 36px;
+}
+
+.catalog__pagination[hidden] {
+  display: none !important;
+}
+
+.catalog__pagination span {
+  font-size: 14px;
+  font-weight: 700;
+  color: #344054;
+}
+
+.catalog__pagination button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 1024px) {
+  .catalog__filters {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .catalog__heading h1 {
+    font-size: 25px;
+  }
+
+  .catalog__filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 14px;
+    gap: 12px;
+  }
+
+  .catalog__actions {
+    justify-content: stretch;
+  }
+
+  .catalog__actions .btn {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .catalog__breadcrumb {
+    margin-bottom: 20px;
+  }
+}
+
+@media (max-width: 420px) {
+  .catalog__filters {
+    grid-template-columns: 1fr;
+  }
+
+  .catalog__heading {
+    gap: 8px;
+  }
+}
