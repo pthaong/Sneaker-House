@@ -4,7 +4,7 @@ package com.sneakerhouse.backend.controller;
 import com.sneakerhouse.backend.dto.AuthDtos.*;
 import com.sneakerhouse.backend.service.AuthException;
 import com.sneakerhouse.backend.service.AuthService;
-import com.sneakerhouse.backend.service.AccountSessionRegistry;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -18,11 +18,13 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.csrf.CsrfToken;
 
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -30,21 +32,18 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthService service;
-private final AuthenticationManager authenticationManager;
-private final SecurityContextRepository contextRepository;
-private final AccountSessionRegistry sessionRegistry;
+    private final AuthenticationManager authenticationManager;
+    private final SecurityContextRepository contextRepository;
 
     public AuthController(
-        AuthService service,
-        AuthenticationManager authenticationManager,
-        SecurityContextRepository contextRepository,
-        AccountSessionRegistry sessionRegistry
-) {
-    this.service = service;
-    this.authenticationManager = authenticationManager;
-    this.contextRepository = contextRepository;
-    this.sessionRegistry = sessionRegistry;
-}
+            AuthService service,
+            AuthenticationManager authenticationManager,
+            SecurityContextRepository contextRepository
+    ) {
+        this.service = service;
+        this.authenticationManager = authenticationManager;
+        this.contextRepository = contextRepository;
+    }
 
     // 1. CSRF TOKEN
     @GetMapping("/csrf")
@@ -60,13 +59,11 @@ private final AccountSessionRegistry sessionRegistry;
     public ResponseEntity<UserResponse> register(
             @Valid @RequestBody RegisterRequest request
     ) {
+        var user = service.register(request);
+
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(
-                        service.response(
-                                service.register(request)
-                        )
-                );
+                .body(service.response(user));
     }
 
     // 3. LOGIN
@@ -85,9 +82,7 @@ private final AccountSessionRegistry sessionRegistry;
                             request.password()
                     )
             );
-        } catch (
-                org.springframework.security.core.AuthenticationException e
-        ) {
+        } catch (org.springframework.security.core.AuthenticationException e) {
             throw new AuthException(
                     401,
                     "INVALID_CREDENTIALS",
@@ -95,32 +90,19 @@ private final AccountSessionRegistry sessionRegistry;
             );
         }
 
-        // Chống Session Fixation
-        HttpSession session = httpRequest.getSession(true);
+        // Tạo session và chống Session Fixation
+        httpRequest.getSession(true);
         httpRequest.changeSessionId();
 
-        SecurityContext context =
-                SecurityContextHolder.createEmptyContext();
+        saveAuthentication(
+                authentication,
+                httpRequest,
+                httpResponse
+        );
 
-        context.setAuthentication(authentication);
-        SecurityContextHolder.setContext(context);
-
-        contextRepository.saveContext(
-        context,
-        httpRequest,
-        httpResponse
-);
-
-// Ghi nhan phien dang nhap Email/Password
-sessionRegistry.register(
-        session,
-        authentication.getName(),
-        httpRequest.getHeader("User-Agent")
-);
-
-return service.response(
-        service.findByEmail(authentication.getName())
-);
+        return service.response(
+                service.findByEmail(authentication.getName())
+        );
     }
 
     // 4. GOOGLE LOGIN
@@ -132,11 +114,11 @@ return service.response(
     ) {
         var user = service.googleLogin(request.idToken());
 
-        var authentication =
+        Authentication authentication =
                 UsernamePasswordAuthenticationToken.authenticated(
                         user.getEmail(),
                         null,
-                        java.util.List.of(
+                        List.of(
                                 new org.springframework.security.core.authority
                                         .SimpleGrantedAuthority(
                                                 "ROLE_" + user.getRole()
@@ -144,30 +126,17 @@ return service.response(
                         )
                 );
 
-        // Chống Session Fixation
-        HttpSession session = httpRequest.getSession(true);
+        // Tạo session và chống Session Fixation
+        httpRequest.getSession(true);
         httpRequest.changeSessionId();
 
-        SecurityContext context =
-                SecurityContextHolder.createEmptyContext();
+        saveAuthentication(
+                authentication,
+                httpRequest,
+                httpResponse
+        );
 
-        context.setAuthentication(authentication);
-        SecurityContextHolder.setContext(context);
-
-        contextRepository.saveContext(
-        context,
-        httpRequest,
-        httpResponse
-);
-
-// Ghi nhan phien dang nhap Google
-sessionRegistry.register(
-        session,
-        user.getEmail(),
-        httpRequest.getHeader("User-Agent")
-);
-
-return service.response(user);
+        return service.response(user);
     }
 
     // 5. FORGOT PASSWORD
@@ -217,15 +186,12 @@ return service.response(user);
     // 9. LOGOUT
     @PostMapping("/logout")
     public MessageResponse logout(
-            HttpServletRequest request
+            HttpServletRequest request,
+            HttpServletResponse response,
+            Authentication authentication
     ) {
-        SecurityContextHolder.clearContext();
-
-        HttpSession session = request.getSession(false);
-
-        if (session != null) {
-            session.invalidate();
-        }
+        new SecurityContextLogoutHandler()
+                .logout(request, response, authentication);
 
         return new MessageResponse(
                 "Đăng xuất thành công."
@@ -237,12 +203,42 @@ return service.response(user);
     public UserResponse me(
             Authentication authentication
     ) {
+        if (authentication == null
+                || !authentication.isAuthenticated()
+                || "anonymousUser".equals(authentication.getPrincipal())) {
+            throw new AuthException(
+                    401,
+                    "UNAUTHORIZED",
+                    "Bạn chưa đăng nhập."
+            );
+        }
+
         return service.response(
                 service.findByEmail(authentication.getName())
         );
     }
 
-    // 11. AUTH ERROR HANDLER
+    // 11. SAVE SECURITY CONTEXT
+    private void saveAuthentication(
+            Authentication authentication,
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) {
+        SecurityContext context =
+                SecurityContextHolder.createEmptyContext();
+
+        context.setAuthentication(authentication);
+
+        SecurityContextHolder.setContext(context);
+
+        contextRepository.saveContext(
+                context,
+                request,
+                response
+        );
+    }
+
+    // 12. AUTH ERROR HANDLER
     @ExceptionHandler(AuthException.class)
     public ResponseEntity<ErrorResponse> authError(
             AuthException e
@@ -257,7 +253,7 @@ return service.response(user);
                 );
     }
 
-    // 12. VALIDATION ERROR HANDLER
+    // 13. VALIDATION ERROR HANDLER
     @ExceptionHandler(
             org.springframework.web.bind.MethodArgumentNotValidException.class
     )
