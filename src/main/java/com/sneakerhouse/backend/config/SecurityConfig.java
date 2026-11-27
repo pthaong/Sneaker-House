@@ -1,23 +1,29 @@
 
 package com.sneakerhouse.backend.config;
 
-import com.sneakerhouse.backend.service.CustomUserDetailsService;
-import org.springframework.beans.factory.annotation.Qualifier;
+import jakarta.servlet.http.HttpServletResponse;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -27,126 +33,159 @@ import java.util.List;
 @Configuration
 public class SecurityConfig {
 
+    // Mã hóa mật khẩu bằng BCrypt
     @Bean
-    PasswordEncoder passwordEncoder() {
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    // Lưu thông tin đăng nhập vào Session
     @Bean
-    DaoAuthenticationProvider authenticationProvider(
-            CustomUserDetailsService users,
-            PasswordEncoder encoder) {
+    public SecurityContextRepository securityContextRepository() {
+        return new HttpSessionSecurityContextRepository();
+    }
 
+    // Provider xác thực email và mật khẩu
+    @Bean
+    public DaoAuthenticationProvider authenticationProvider(
+            UserDetailsService userDetailsService,
+            PasswordEncoder passwordEncoder
+    ) {
         DaoAuthenticationProvider provider =
-                new DaoAuthenticationProvider(encoder);
+                new DaoAuthenticationProvider(passwordEncoder);
 
-        provider.setUserDetailsService(users);
+        provider.setUserDetailsService(userDetailsService);
 
         return provider;
     }
 
+    // AuthenticationManager sử dụng trực tiếp DaoAuthenticationProvider
     @Bean
-    AuthenticationManager authenticationManager(
-            AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(
+            DaoAuthenticationProvider authenticationProvider
+    ) {
+        return new ProviderManager(List.of(authenticationProvider));
     }
 
+    // Cấu hình bảo mật
     @Bean
-    SecurityContextRepository securityContextRepository() {
-        return new HttpSessionSecurityContextRepository();
-    }
-
-    @Bean
-    SecurityFilterChain filterChain(
+    public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
-            DaoAuthenticationProvider provider,
-            @Qualifier("corsConfigurationSource")
-            CorsConfigurationSource cors,
-            SecurityContextRepository contextRepository
+            DaoAuthenticationProvider authenticationProvider,
+            SecurityContextRepository securityContextRepository
     ) throws Exception {
 
-        http.authenticationProvider(provider)
-                .cors(c -> c.configurationSource(cors))
+        CookieCsrfTokenRepository csrfRepository =
+                CookieCsrfTokenRepository.withHttpOnlyFalse();
 
-                .csrf(csrf -> csrf
-                        .csrfTokenRepository(
-                                CookieCsrfTokenRepository.withHttpOnlyFalse())
-                        .csrfTokenRequestHandler(
-                                new CsrfTokenRequestAttributeHandler())
-                        .ignoringRequestMatchers("/error")
-                )
+        CsrfTokenRequestAttributeHandler csrfHandler =
+                new CsrfTokenRequestAttributeHandler();
 
-                .authorizeHttpRequests(auth -> auth
+        http
+            // CORS
+            .cors(cors -> cors
+                    .configurationSource(corsConfigurationSource())
+            )
 
-                        // Cho phép preflight request
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+            // CSRF: giữ bảo vệ cho các API thông thường
+            .csrf(csrf -> csrf
+                    .csrfTokenRepository(csrfRepository)
+                    .csrfTokenRequestHandler(csrfHandler)
+                    .ignoringRequestMatchers(
+                            "/api/payments/payos/webhook"
+                    )
+            )
 
-                        // API Authentication
-                        .requestMatchers(
-                                "/api/auth/csrf",
-                                "/api/auth/register",
-                                "/api/auth/login",
-                                "/api/auth/google",
-                                "/api/auth/forgot-password",
-                                "/api/auth/verify-otp",
-                                "/api/auth/resend-otp",
-                                "/api/auth/reset-password"
-                        ).permitAll()
-                        // Chỉ ADMIN được quản lý Banner
-                        .requestMatchers(
-                                HttpMethod.POST,
-                                "/api/banners"
-                        ).hasRole("ADMIN")
+            // Provider xác thực
+            .authenticationProvider(authenticationProvider)
 
-                        .requestMatchers(
-                                HttpMethod.PUT,
-                                "/api/banners/*"
-                        ).hasRole("ADMIN")
+            // Lưu SecurityContext vào HTTP Session
+            .securityContext(context -> context
+                    .securityContextRepository(securityContextRepository)
+            )
 
-                        .requestMatchers(
-                                HttpMethod.DELETE,
-                                "/api/banners/*"
-                        ).hasRole("ADMIN")
-                        // Homepage: chỉ công khai phương thức GET
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/homepage",
-                                "/api/homepage/**",
-                                "/api/banners",
-                                "/api/banners/**",
-                                "/api/categories",
-                                "/api/categories/**",
-                                "/api/brands",
-                                "/api/brands/**",
-                                "/api/products",
-                                "/api/products/**",
-                                "/api/flash-sales",
-                                "/api/flash-sales/**",
-                                "/api/collections",
-                                "/api/collections/**",
-                                "/api/news",
-                                "/api/news/**"
-                        ).permitAll()
+            // Session
+            .sessionManagement(session -> session
+                    .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+            )
 
-                        // Các API khác vẫn yêu cầu đăng nhập
-                        .anyRequest().authenticated()
-                )
+            // Xử lý lỗi bảo mật
+            .exceptionHandling(exception -> exception
+                    .authenticationEntryPoint(
+                            new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)
+                    )
+                    .accessDeniedHandler((request, response, ex) ->
+                            response.sendError(
+                                    HttpServletResponse.SC_FORBIDDEN
+                            )
+                    )
+            )
 
-                .securityContext(c ->
-                        c.securityContextRepository(contextRepository))
+            // Phân quyền API
+            .authorizeHttpRequests(auth -> auth
 
-                .sessionManagement(s ->
-                        s.sessionCreationPolicy(
-                                SessionCreationPolicy.IF_REQUIRED))
+                    // PayOS webhook
+                    .requestMatchers(
+                            HttpMethod.POST,
+                            "/api/payments/payos/webhook"
+                    ).permitAll()
 
-                .formLogin(f -> f.disable())
-                .httpBasic(b -> b.disable());
+                    // API xác thực công khai
+                    .requestMatchers(
+                            "/api/auth/csrf",
+                            "/api/auth/register",
+                            "/api/auth/login",
+                            "/api/auth/google",
+                            "/api/auth/forgot-password",
+                            "/api/auth/verify-otp",
+                            "/api/auth/resend-otp",
+                            "/api/auth/reset-password"
+                    ).permitAll()
+
+                    // Thông tin tài khoản
+                    .requestMatchers(
+                            HttpMethod.GET,
+                            "/api/auth/me"
+                    ).authenticated()
+
+                    // Đăng xuất
+                    .requestMatchers(
+                            HttpMethod.POST,
+                            "/api/auth/logout"
+                    ).authenticated()
+
+                    // API quản trị
+                    .requestMatchers("/api/admin/**")
+                    .hasRole("ADMIN")
+
+                    // API công khai
+                    .requestMatchers(
+                            HttpMethod.GET,
+                            "/api/coupons/**",
+                            "/api/banners/**",
+                            "/api/home/**",
+                            "/api/categories/**",
+                            "/api/brands/**",
+                            "/api/products/**",
+                            "/api/flash-sales/**",
+                            "/api/collections/**",
+                            "/api/news/**"
+                    ).permitAll()
+
+                    // Những API còn lại yêu cầu đăng nhập
+                    .anyRequest().authenticated()
+            )
+
+            // Không sử dụng form login và HTTP Basic
+            .formLogin(AbstractHttpConfigurer::disable)
+            .httpBasic(AbstractHttpConfigurer::disable);
 
         return http.build();
     }
 
+    // Cấu hình CORS
     @Bean
-    CorsConfigurationSource corsConfigurationSource() {
+    public CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration config = new CorsConfiguration();
 
@@ -160,13 +199,20 @@ public class SecurityConfig {
         ));
 
         config.setAllowedMethods(List.of(
-                "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
+                "GET",
+                "POST",
+                "PUT",
+                "PATCH",
+                "DELETE",
+                "OPTIONS"
         ));
 
         config.setAllowedHeaders(List.of(
                 "Content-Type",
                 "X-XSRF-TOKEN",
-                "X-Requested-With"
+                "X-Requested-With",
+                "Accept",
+                "Authorization"
         ));
 
         config.setAllowCredentials(true);
